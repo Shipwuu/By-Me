@@ -183,6 +183,33 @@ for _, ghost in pairs(Workspace:GetChildren()) do
     end
 end
 
+for I, y in pairs(workspace.House:GetChildren()) do
+    if y.Name == "Bone" then
+        if y:FindFirstChild("BoneModel") then
+            local p = Instance.new("BillboardGui")
+            local q = Instance.new("TextLabel")
+            p.Adornee = y
+            p.Name = "Bone"
+            p.Parent = y
+            p.Size = UDim2.new(0, 100, 0, 150)
+            p.StudsOffset = Vector3.new(0, 1, 0)
+            p.AlwaysOnTop = true
+            q.Parent = p
+            q.BackgroundTransparency = 1
+            q.Position = UDim2.new(0, 0, 0, -50)
+            q.Size = UDim2.new(0, 100, 0, 100)
+            q.Font = Enum.Font.SourceSansSemibold
+            q.TextSize = 14
+            q.TextColor3 = Color3.fromRGB(230, 230, 250)
+            q.TextStrokeTransparency = 0
+            q.TextYAlignment = Enum.TextYAlignment.Bottom
+            q.Text = "Bone"
+            q.ZIndex = 10
+        end
+    end
+end
+
+
 local c = workspace.CurrentCamera
 local ps = game:GetService("Players")
 local lp = ps.LocalPlayer
