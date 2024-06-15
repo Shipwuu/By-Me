@@ -285,4 +285,3 @@ end
 
 -- Execute the script loading function
 loadAndExecuteScript()
-f
