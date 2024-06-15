@@ -1,1 +1,19 @@
-print("Hellow")
+-- Create GUI for opening the console
+local consoleButton = Instance.new("TextButton")
+consoleButton.Name = "ConsoleButton"
+consoleButton.Parent = sanityGui  -- Assuming sanityGui is the parent GUI element
+consoleButton.AnchorPoint = Vector2.new(1, 0)
+consoleButton.Position = UDim2.new(1, -10, 0, 10)  -- Upper right corner positioning
+consoleButton.Size = UDim2.new(0, 100, 0, 30)
+consoleButton.Font = Enum.Font.SourceSansBold
+consoleButton.TextSize = 18
+consoleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+consoleButton.BackgroundColor3 = Color3.fromRGB(0, 128, 255)
+consoleButton.BackgroundTransparency = 1  -- Fully transparent background
+consoleButton.TextStrokeTransparency = 0
+consoleButton.Text = "Open Console"
+
+-- Function to open the console when the button is clicked
+consoleButton.MouseButton1Click:Connect(function()
+    game:GetService("StarterGui"):SetCore("DevConsoleVisible", true)
+end)
