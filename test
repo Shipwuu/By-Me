@@ -11,6 +11,8 @@ else
     flag.Parent = workspace
 
 local a = loadstring(game:HttpGet("https://raw.githubusercontent.com/DashaBars/Hack/main/Gui"))()
+local b = a:Window("Specter")
+b.Position = UDim2.new(1, -300, 0, 10)  -- Adjust position as needed
 
 -- Services
 local CoreGui = game:GetService("CoreGui")
