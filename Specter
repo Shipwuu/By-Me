@@ -159,10 +159,7 @@ addBillboardGuiToPart("Orb", "Orb", Color3.fromRGB(30, 144, 255))
 addBillboardGuiToPart("emfpart5", "Emf5", Color3.fromRGB(255, 0, 0))
 addBillboardGuiToPart("emfpart3", "Emf3", Color3.fromRGB(100, 140, 0))
 addBillboardGuiToPart("emfpart4", "Emf4", Color3.fromRGB(100, 69, 0))
-addBillboardGuiToPart("FuseBox", "FuseBox", Color3.fromRGB(192, 192, 192))
-addBillboardGuiToPart("Van", "Van", Color3.fromRGB(255, 0, 255))
-addBillboardGuiToPart("BoneModel", "Bone", Color3.fromRGB(230, 230, 250))
-addBillboardGuiToPart("Door", "Exit", Color3.fromRGB(0, 128, 0))
+
 
 for _, ghost in pairs(Workspace:GetChildren()) do
     if ghost.Name == "GhostModel" and ghost:FindFirstChild("Humanoid") then
@@ -204,6 +201,80 @@ for I, y in pairs(workspace.House:GetChildren()) do
             q.Text = "Bone"
             q.ZIndex = 10
         end
+    end
+end
+
+for B, J in pairs(workspace.House.Outside.Doors:GetChildren()) do
+    if J.Name == "Door" then
+        if J:FindFirstChild("Door") then
+            local p = Instance.new("BillboardGui")
+            local q = Instance.new("TextLabel")
+            p.Adornee = J
+            p.Name = "Exit"
+            p.Parent = J
+            p.Size = UDim2.new(0, 100, 0, 150)
+            p.StudsOffset = Vector3.new(0, 1, 0)
+            p.AlwaysOnTop = true
+            q.Parent = p
+            q.BackgroundTransparency = 1
+            q.Position = UDim2.new(0, 0, 0, -50)
+            q.Size = UDim2.new(0, 100, 0, 100)
+            q.Font = Enum.Font.SourceSansSemibold
+            q.TextSize = 14
+            q.TextColor3 = Color3.fromRGB(0, 128, 0)
+            q.TextStrokeTransparency = 0
+            q.TextYAlignment = Enum.TextYAlignment.Bottom
+            q.Text = "Exit"
+            q.ZIndex = 10
+        end
+    end
+end
+
+for y, H in pairs(workspace.Van:GetChildren()) do
+    if H.Name == "Spawn" then
+        local p = Instance.new("BillboardGui")
+        local q = Instance.new("TextLabel")
+        p.Adornee = H
+        p.Name = "Van"
+        p.Parent = H
+        p.Size = UDim2.new(0, 100, 0, 150)
+        p.StudsOffset = Vector3.new(0, 1, 0)
+        p.AlwaysOnTop = true
+        q.Parent = p
+        q.BackgroundTransparency = 1
+        q.Position = UDim2.new(0, 0, 0, -50)
+        q.Size = UDim2.new(0, 100, 0, 100)
+        q.Font = Enum.Font.SourceSansSemibold
+        q.TextSize = 14
+        q.TextColor3 = Color3.fromRGB(255, 0, 255)
+        q.TextStrokeTransparency = 0
+        q.TextYAlignment = Enum.TextYAlignment.Bottom
+        q.Text = "Van"
+        q.ZIndex = 10
+    end
+end
+
+for G, x in pairs(workspace.House:GetChildren()) do
+    if x.Name == "FuseBox" then
+        local p = Instance.new("BillboardGui")
+        local q = Instance.new("TextLabel")
+        p.Adornee = x
+        p.Name = "FuseBox"
+        p.Parent = x
+        p.Size = UDim2.new(0, 100, 0, 150)
+        p.StudsOffset = Vector3.new(0, 1, 0)
+        p.AlwaysOnTop = true
+        q.Parent = p
+        q.BackgroundTransparency = 1
+        q.Position = UDim2.new(0, 0, 0, -50)
+        q.Size = UDim2.new(0, 100, 0, 100)
+        q.Font = Enum.Font.SourceSansSemibold
+        q.TextSize = 14
+        q.TextColor3 = Color3.fromRGB(192, 192, 192)
+        q.TextStrokeTransparency = 0
+        q.TextYAlignment = Enum.TextYAlignment.Bottom
+        q.Text = "FuseBox"
+        q.ZIndex = 10
     end
 end
 
