@@ -1,223 +1,211 @@
--- Services
-local Players = game:GetService("Players")
-local Lighting = game:GetService("Lighting")
-local Workspace = game:GetService("Workspace")
-local RunService = game:GetService("RunService")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local CoreGui = game:GetService("CoreGui")
+local a = loadstring(game:HttpGet("https://raw.githubusercontent.com/DashaBars/Hack/main/Gui"))()
+local b = a:Window("Specter")
+local d = game:GetService("CoreGui")
+local e = game:GetService("Workspace").House.FuseBox
+local f = game:GetService("Workspace").Van.Spawn
+local g = game:GetService("Players").LocalPlayer
+local h = game:GetService("Workspace").House.Bone
+local i = game:GetService("Players").LocalPlayer.Character.HumanoidRootPart
 
--- Variables
-local LocalPlayer = Players.LocalPlayer
-local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
-
--- Function to protect GUI if not already protected
+-- Protect GUI function
 if not pcall(function() return syn.protect_gui end) then
     syn = {}
-    syn.protect_gui = function(gui)
-        gui.Parent = CoreGui
-    end
-end
-
--- Function to destroy existing UI
-local function destroyUI()
-    for _, gui in ipairs(CoreGui:GetChildren()) do
-        if gui:IsA("ScreenGui") and gui.Name == "SpecterUI" then
-            gui:Destroy()
-        end
+    syn.protect_gui = function(j)
+        j.Parent = d
     end
 end
 
 -- Adjust game settings
 game:GetService("Workspace").FallenPartsDestroyHeight = -50000
-Lighting.Brightness = 2
-Lighting.GlobalShadows = false
-Lighting.OutdoorAmbient = Color3.fromRGB(128, 128, 128)
-Lighting.Ambient = Color3.fromRGB(128, 128, 128)
-Lighting.FogEnd = 100000
+game:GetService("Lighting").Brightness = 2
+game:GetService("Lighting").GlobalShadows = false
+game:GetService("Lighting").OutdoorAmbient = Color3.fromRGB(128, 128, 128)
+game:GetService("Lighting").Ambient = Color3.fromRGB(128, 128, 128)
+game:GetService("Lighting").FogEnd = 100000
 
--- Remove atmospheres from lighting
-for _, descendant in pairs(Lighting:GetDescendants()) do
-    if descendant:IsA("Atmosphere") then
-        descendant:Destroy()
+-- Remove Atmosphere objects from Lighting
+for k, l in pairs(game:GetService("Lighting"):GetDescendants()) do
+    if l:IsA("Atmosphere") then
+        l:Destroy()
     end
 end
 
--- Function to create billboard GUI for orbs
-local function createOrbGUI(orb)
-    local billboardGui = Instance.new("BillboardGui")
-    billboardGui.Adornee = orb
-    billboardGui.Size = UDim2.new(0, 100, 0, 150)
-    billboardGui.StudsOffset = Vector3.new(0, 1, 0)
-    billboardGui.AlwaysOnTop = true
-    
-    local textLabel = Instance.new("TextLabel")
-    textLabel.Parent = billboardGui
-    textLabel.BackgroundTransparency = 1
-    textLabel.Position = UDim2.new(0, 0, 0, -50)
-    textLabel.Size = UDim2.new(0, 100, 0, 100)
-    textLabel.Font = Enum.Font.SourceSansSemibold
-    textLabel.TextSize = 14
-    textLabel.TextColor3 = Color3.fromRGB(30, 144, 255)
-    textLabel.TextStrokeTransparency = 0
-    textLabel.TextYAlignment = Enum.TextYAlignment.Bottom
-    textLabel.Text = "Orb"
-    textLabel.ZIndex = 10
-    
+-- Function to create BillboardGui for orbs
+local function createOrbBillboard(o)
+    local p = Instance.new("BillboardGui")
+    local q = Instance.new("TextLabel")
+    p.Adornee = o
+    p.Name = "Orbs"
+    p.Parent = o
+    p.Size = UDim2.new(0, 100, 0, 150)
+    p.StudsOffset = Vector3.new(0, 1, 0)
+    p.AlwaysOnTop = true
+    q.Parent = p
+    q.BackgroundTransparency = 1
+    q.Position = UDim2.new(0, 0, 0, -50)
+    q.Size = UDim2.new(0, 100, 0, 100)
+    q.Font = Enum.Font.SourceSansSemibold
+    q.TextSize = 14
+    q.TextColor3 = Color3.fromRGB(30, 144, 255)
+    q.TextStrokeTransparency = 0
+    q.TextYAlignment = Enum.TextYAlignment.Bottom
+    q.Text = "Orb"
+    q.ZIndex = 10
+
     local function updatePosition()
-        local viewportPoint = Workspace.CurrentCamera:WorldToViewportPoint(orb.Orb.Position)
-        if viewportPoint then
-            textLabel.Position = Vector2.new(viewportPoint.X, viewportPoint.Y)
-            textLabel.Visible = true
-        else
-            textLabel.Visible = false
-        end
+        local r
+        r = game:GetService("RunService").RenderStepped:Connect(function()
+            if r and workspace:FindFirstChild(o.Name) and o:FindFirstChild("Orb") then
+                local s, t = m:WorldToViewportPoint(o.Orb.Position)
+                if t then
+                    q.Position = Vector2.new(s.X, s.Y)
+                    q.Visible = true
+                else
+                    q.Visible = false
+                end
+            else
+                if game:GetService("Workspace"):FindFirstChild(o.Name) == nil then
+                    r:Disconnect()
+                end
+                q.Visible = true
+            end
+        end)
     end
-    
-    updatePosition()
-    local orbRenderStepped = RunService.RenderStepped:Connect(updatePosition)
-    
-    return billboardGui
+
+    coroutine.wrap(updatePosition)()
 end
 
--- Function to create billboard GUI for EMF parts
-local function createEmfGUI(part, color, text)
-    local billboardGui = Instance.new("BillboardGui")
-    billboardGui.Adornee = part
-    billboardGui.Size = UDim2.new(0, 100, 0, 150)
-    billboardGui.StudsOffset = Vector3.new(0, 1, 0)
-    billboardGui.AlwaysOnTop = true
-    
-    local textLabel = Instance.new("TextLabel")
-    textLabel.Parent = billboardGui
-    textLabel.BackgroundTransparency = 1
-    textLabel.Position = UDim2.new(0, 0, 0, -50)
-    textLabel.Size = UDim2.new(0, 100, 0, 100)
-    textLabel.Font = Enum.Font.SourceSansSemibold
-    textLabel.TextSize = 14
-    textLabel.TextColor3 = color
-    textLabel.TextStrokeTransparency = 0
-    textLabel.TextYAlignment = Enum.TextYAlignment.Bottom
-    textLabel.Text = text
-    textLabel.ZIndex = 10
-    
-    local function updatePosition()
-        local viewportPoint = Workspace.CurrentCamera:WorldToViewportPoint(part.Position)
-        if viewportPoint then
-            textLabel.Position = Vector2.new(viewportPoint.X, viewportPoint.Y)
-            textLabel.Visible = true
-        else
-            textLabel.Visible = false
-        end
-    end
-    
-    updatePosition()
-    local emfRenderStepped = RunService.RenderStepped:Connect(updatePosition)
-    
-    return billboardGui
-end
-
--- Function to create GUI
-local function createGUI()
-    -- Destroy existing UI if exists
-    destroyUI()
-    
-    -- Load GUI script
-    local guiScript = loadstring(game:HttpGet("https://raw.githubusercontent.com/DashaBars/Hack/main/Gui"))
-    if guiScript then
-        local gui = guiScript()
-        gui.Name = "SpecterUI"
-        
-        -- Window for Specter
-        local specterWindow = gui:Window("Specter")
-        specterWindow.Position = UDim2.new(1, -300, 0, 10)  -- Adjust position as needed
-        
-        -- Window for Spirit box
-        local spiritBoxWindow = gui:Window("Spirit box")
-        
-        -- Keybind for P
-        gui:Keybind("P")
-        
-        -- Button functions for Specter window
-        specterWindow:Button("Sanity check", function()
-            local sanity = LocalPlayer.Data:FindFirstChild("Sanity")
-            game:GetService("StarterGui"):SetCore("ChatMakeSystemMessage", {
-                Text = "Sanity: " .. math.floor(sanity.Value),
-                Color = Color3.fromRGB(70, 130, 180),
-                Font = Enum.Font.SourceSansBold,
-                FontSize = Enum.FontSize.Size24
-            })
-        end)
-        
-        specterWindow:Button("Not Alone", function()
-            LocalPlayer.Data.Alone.Value = false
-        end)
-        
-        specterWindow:Button("Alone", function()
-            LocalPlayer.Data.Alone.Value = true
-        end)
-        
-        specterWindow:Button("TpToGhostRoom", function()
-            HumanoidRootPart.CFrame = Workspace.emfpart2.CFrame
-        end)
-        
-        specterWindow:Button("TpToFuse", function()
-            HumanoidRootPart.CFrame = Workspace.House.FuseBox.CFrame
-        end)
-        
-        specterWindow:Button("TpToBone", function()
-            HumanoidRootPart.CFrame = Workspace.House.Bone.CFrame + Vector3.new(0, 2, 0)
-        end)
-        
-        specterWindow:Button("TpToVan", function()
-            HumanoidRootPart.CFrame = Workspace.Van.Spawn.CFrame + Vector3.new(0, 3, 0)
-        end)
-        
-        -- Button functions for Spirit box window
-        spiritBoxWindow:Button("All words", function()
-            local words = {
-                "Hello? Anyone here? Someone there? How old are you? Where are you? Are you here? Are you old? Are you a man? Are you a women? Show us a sign, Give us a sign, Are you there?",
-                "All"
-            }
-            ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer(unpack(words))
-        end)
-        
-        local spiritBoxButtons = {
-            "Hello?", "Someone there?", "Anyone here?", "How old?",
-            "Where are you?", "Are you here?", "Show us a sign",
-            "Give us a sign", "Are you there?", "Are you here?",
-            "Are you old?", "Are you a women?", "Are you a man?"
-        }
-        
-        for _, word in ipairs(spiritBoxButtons) do
-            spiritBoxWindow:Button(word, function()
-                local words = { word, "All" }
-                ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer(unpack(words))
-            end)
-        end
-    else
-        error("Failed to load GUI script")
+-- Create BillboardGui for existing orbs and listen for new ones
+local m = workspace.CurrentCamera
+for u, o in pairs(workspace:GetChildren()) do
+    if o.Name == "Orb" then
+        coroutine.wrap(createOrbBillboard)(o)
     end
 end
 
--- Create GUI
-createGUI()
-
--- Create billboard GUIs for orbs and EMF parts
-for _, orb in pairs(Workspace:GetChildren()) do
-    if orb.Name == "Orb" then
-        createOrbGUI(orb)
-    end
-end
-
-Workspace.ChildAdded:Connect(function(child)
-    if child.Name == "Orb" then
-        createOrbGUI(child)
-    elseif child.Name == "emfpart5" then
-        createEmfGUI(child, Color3.fromRGB(255, 0, 0), "Emf5")
-    elseif child.Name == "emfpart3" then
-        createEmfGUI(child, Color3.fromRGB(255, 140, 0), "Emf3")
-    elseif child.Name == "emfpart4" then
-        createEmfGUI(child, Color3.fromRGB(255, 69, 0), "Emf4")
+workspace.ChildAdded:Connect(function(o)
+    if o.Name == "Orb" then
+        coroutine.wrap(createOrbBillboard)(o)
     end
 end)
+
+-- Functions to create BillboardGui for EMF parts (emfpart5, emfpart3, emfpart4)
+local function createEmfBillboard(w, color, text)
+    local p = Instance.new("BillboardGui")
+    local q = Instance.new("TextLabel")
+    p.Adornee = w
+    p.Name = "Emf"
+    p.Parent = w
+    p.Size = UDim2.new(0, 100, 0, 150)
+    p.StudsOffset = Vector3.new(0, 1, 0)
+    p.AlwaysOnTop = true
+    q.Parent = p
+    q.BackgroundTransparency = 1
+    q.Position = UDim2.new(0, 0, 0, -50)
+    q.Size = UDim2.new(0, 100, 0, 100)
+    q.Font = Enum.Font.SourceSansSemibold
+    q.TextSize = 14
+    q.TextColor3 = color
+    q.TextStrokeTransparency = 0
+    q.TextYAlignment = Enum.TextYAlignment.Bottom
+    q.Text = text
+    q.ZIndex = 10
+
+    local function updatePosition()
+        local x
+        x = game:GetService("RunService").RenderStepped:Connect(function()
+            if w and workspace:FindFirstChild(w.Name) and w:FindFirstChild(text) then
+                local s, t = m:WorldToViewportPoint(w[text].Position)
+                if t then
+                    q.Position = Vector2.new(s.X, s.Y)
+                    q.Visible = true
+                else
+                    q.Visible = false
+                end
+            else
+                if game:GetService("Workspace"):FindFirstChild(w.Name) == nil then
+                    x:Disconnect()
+                end
+                q.Visible = true
+            end
+        end)
+    end
+
+    coroutine.wrap(updatePosition)()
+end
+
+-- Create BillboardGui for emfpart5
+for y, w in pairs(workspace:GetChildren()) do
+    if w.Name == "emfpart5" then
+        coroutine.wrap(createEmfBillboard)(w, Color3.fromRGB(255, 0, 0), "emfpart5")
+    end
+end
+
+workspace.ChildAdded:Connect(function(w)
+    if w.Name == "emfpart5" then
+        coroutine.wrap(createEmfBillboard)(w, Color3.fromRGB(255, 0, 0), "emfpart5")
+    end
+end)
+
+-- Create BillboardGui for emfpart3
+for B, z in pairs(workspace:GetChildren()) do
+    if z.Name == "emfpart3" then
+        coroutine.wrap(createEmfBillboard)(z, Color3.fromRGB(255, 140, 0), "emfpart3")
+    end
+end
+
+workspace.ChildAdded:Connect(function(z)
+    if z.Name == "emfpart3" then
+        coroutine.wrap(createEmfBillboard)(z, Color3.fromRGB(255, 140, 0), "emfpart3")
+    end
+end)
+
+-- Create BillboardGui for emfpart4
+for l, C in pairs(workspace:GetChildren()) do
+    if C.Name == "emfpart4" then
+        coroutine.wrap(createEmfBillboard)(C, Color3.fromRGB(255, 69, 0), "emfpart4")
+    end
+end
+
+workspace.ChildAdded:Connect(function(C)
+    if C.Name == "emfpart4" then
+        coroutine.wrap(createEmfBillboard)(C, Color3.fromRGB(255, 69, 0), "emfpart4")
+    end
+end)
+
+-- ESP for GhostModel
+for D, E in pairs(workspace:GetChildren()) do
+    if E.Name == "GhostModel" and E:FindFirstChild("Humanoid") then
+        local F = Instance.new("BoxHandleAdornment")
+        local p = Instance.new("BillboardGui")
+        local q = Instance.new("TextLabel")
+        F.Adornee = E.HumanoidRootPart
+        F.AlwaysOnTop = true
+        F.Color3 = Color3.fromRGB(255, 250, 250)
+        F.Size = Vector3.new(2, 2, 1)
+        F.Transparency = 0.5
+        F.ZIndex = 2
+        F.Parent = E
+        F.Name = "ESP"
+        p.Adornee = E.HumanoidRootPart
+        p.Name = "Ghost"
+        p.Parent = E
+        p.Size = UDim2.new(0, 100, 0, 150)
+        p.StudsOffset = Vector3.new(0, 1, 0)
+        p.AlwaysOnTop = true
+        q.Parent = p
+        q.BackgroundTransparency = 1
+        q.Position = UDim2.new(0, 0, 0, -50)
+        q.Size = UDim2.new(0, 100, 0, 100)
+        q.Font = Enum.Font.SourceSansSemibold
+        q.TextSize = 14
+        q.TextColor3 = Color3.new(1, 1, 1)
+        q.TextStrokeTransparency = 0
+        q.TextYAlignment = Enum.TextYAlignment.Bottom
+        q.Text = "Ghost Name: " .. workspace:FindFirstChild("Van").Objectives.SurfaceGui.Frame.Objectives.GhostInfo.Text:split("is ")[2]:match(">(.+)<")
+        q.ZIndex = 10
+    end
+end
+
+-- Create BillboardGui for FuseBox
+for G, x in pairs(workspace.House:GetChildren()) do
