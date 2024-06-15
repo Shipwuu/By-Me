@@ -19,6 +19,15 @@ if not pcall(function() return syn.protect_gui end) then
     end
 end
 
+-- Function to destroy existing UI
+local function destroyUI()
+    for _, gui in ipairs(CoreGui:GetChildren()) do
+        if gui:IsA("ScreenGui") and gui.Name == "SpecterUI" then
+            gui:Destroy()
+        end
+    end
+end
+
 -- Adjust game settings
 game:GetService("Workspace").FallenPartsDestroyHeight = -50000
 Lighting.Brightness = 2
@@ -108,11 +117,16 @@ local function createEmfGUI(part, color, text)
     return billboardGui
 end
 
--- Create GUI using external script
+-- Function to create GUI
 local function createGUI()
+    -- Destroy existing UI if exists
+    destroyUI()
+    
+    -- Load GUI script
     local guiScript = loadstring(game:HttpGet("https://raw.githubusercontent.com/DashaBars/Hack/main/Gui"))
     if guiScript then
         local gui = guiScript()
+        gui.Name = "SpecterUI"
         
         -- Window for Specter
         local specterWindow = gui:Window("Specter")
