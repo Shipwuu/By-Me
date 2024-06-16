@@ -1,0 +1,267 @@
+-- Services
+local StarterGui = game:GetService("StarterGui")
+
+-- Create a ScreenGui for the button
+local gui = Instance.new("ScreenGui")
+gui.Name = "ConsoleButtonGui"
+gui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+
+-- Create the button
+local button = Instance.new("TextButton")
+button.Name = "OpenConsoleButton"
+button.Parent = gui
+button.AnchorPoint = Vector2.new(1, 0)
+button.Position = UDim2.new(1, -1100, 0, -30)  -- Upper right corner positioning
+button.Size = UDim2.new(0, 30, 0, 30)
+button.Font = Enum.Font.SourceSansBold
+button.TextSize = 18
+button.TextColor3 = Color3.fromRGB(255, 255, 255)
+button.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+button.BackgroundTransparency = 0.5  -- Semi-transparent background
+button.TextStrokeTransparency = 1
+button.Text = "🐰"
+
+-- Add UICorner to make the button corners smooth
+local buttonCorner = Instance.new("UICorner")
+buttonCorner.CornerRadius = UDim.new(0, 5)  -- Adjust the corner radius to 5
+buttonCorner.Parent = button
+
+-- Function to open the console when the button is clicked
+button.MouseButton1Click:Connect(function()
+    StarterGui:SetCore("DevConsoleVisible", true)
+end)
+
+local StarterGui = game:GetService("StarterGui")
+local Players = game:GetService("Players")
+
+-- Function to fetch the player's headshot image
+local function getPlayerHeadshotImage(playerName)
+    local player = Players:FindFirstChild(playerName)
+    if player then
+        local userId = player.UserId
+        local ThumbType = Enum.ThumbnailType.HeadShot
+        local ThumbSize = Enum.ThumbnailSize.Size420x420  -- Larger size for clarity
+
+        return Players:GetUserThumbnailAsync(userId, ThumbType, ThumbSize)
+    end
+    return nil
+end
+
+-- Create a ScreenGui for the button
+local gui = Instance.new("ScreenGui")
+gui.Name = "CustomButtonsGui"
+gui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
+
+-- Create the button for teleportation confirmation
+local rejoinButton = Instance.new("TextButton")
+rejoinButton.Name = "RejoinButton"
+rejoinButton.Parent = gui
+rejoinButton.AnchorPoint = Vector2.new(1, 0)
+rejoinButton.Position = UDim2.new(1, -1060, 0, -30)  -- Adjust X position as needed
+rejoinButton.Size = UDim2.new(0, 30, 0, 30)
+rejoinButton.Font = Enum.Font.SourceSansBold
+rejoinButton.TextSize = 18
+rejoinButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+rejoinButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+rejoinButton.BackgroundTransparency = 0.5  -- Semi-transparent background
+rejoinButton.TextStrokeTransparency = 1
+rejoinButton.Text = "🤍"
+
+-- Add UICorner to make the button corners smooth
+local rejoinButtonCorner = Instance.new("UICorner")
+rejoinButtonCorner.CornerRadius = UDim.new(0, 5)  -- Adjust the corner radius as needed
+rejoinButtonCorner.Parent = rejoinButton
+
+-- Function to teleport when the "Rejoin" button is clicked
+rejoinButton.MouseButton1Click:Connect(function()
+    local bindable = Instance.new("BindableFunction")
+
+    function bindable.OnInvoke(response)
+        local ts = game:GetService("TeleportService")
+        local p = game:GetService("Players").LocalPlayer
+
+        ts:Teleport(game.PlaceId, p)
+        if response == "Yes" then
+            -- Your logic when "Yes" is chosen
+        elseif response == "No" then
+            -- Your logic when "No" is chosen
+        end
+    end
+
+    -- Fetch the current player's headshot image
+    local playerName = Players.LocalPlayer.Name
+    local HeadshotImage = getPlayerHeadshotImage(playerName)
+
+    StarterGui:SetCore("SendNotification", {
+        Title = "  💞 REJOIN",
+        Text = "   Are You Sure?",
+        Duration = 8,
+        Callback = bindable,
+        Button1 = "Yes",
+        Icon = HeadshotImage or ""  -- Set the headshot image as the icon, fallback to empty string if image not found
+    })
+end)
+
+local StarterGui = game:GetService("StarterGui")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+
+-- Function to fetch the player's headshot image
+local function getPlayerHeadshotImage(playerName)
+    local player = Players:FindFirstChild(playerName)
+    if player then
+        local userId = player.UserId
+        local ThumbType = Enum.ThumbnailType.HeadShot
+        local ThumbSize = Enum.ThumbnailSize.Size420x420
+
+        return Players:GetUserThumbnailAsync(userId, ThumbType, ThumbSize)
+    end
+    return nil
+end
+
+-- ESP Script
+local c = workspace.CurrentCamera
+local ps = game:GetService("Players")
+local lp = ps.LocalPlayer
+local rs = game:GetService("RunService")
+
+local espEnabled = false
+
+local function esp(p, cr)
+    local h = cr:WaitForChild("Humanoid")
+    local hrp = cr:WaitForChild("Head")
+
+    local text = Drawing.new("Text")
+    text.Visible = false
+    text.Center = true
+    text.Outline = false
+    text.Font = 3
+    text.Size = 16.16
+    text.Color = Color3.new(170, 170, 170)
+
+    local connection
+    local connection2
+    local connection3
+
+    local function dc()
+        text.Visible = false
+        text:Remove()
+        if connection then
+            connection:Disconnect()
+            connection = nil
+        end
+        if connection2 then
+            connection2:Disconnect()
+            connection2 = nil
+        end
+        if connection3 then
+            connection3:Disconnect()
+            connection3 = nil
+        end
+    end
+
+    connection2 = cr.AncestryChanged:Connect(function(_, parent)
+        if not parent then
+            dc()
+        end
+    end)
+
+    connection3 = h.HealthChanged:Connect(function(v)
+        if (v <= 0) or (h:GetState() == Enum.HumanoidStateType.Dead) then
+            dc()
+        end
+    end)
+
+    connection = rs.RenderStepped:Connect(function()
+        if espEnabled then
+            local hrp_pos, hrp_onscreen = c:WorldToViewportPoint(hrp.Position)
+            if hrp_onscreen then
+                text.Position = Vector2.new(hrp_pos.X, hrp_pos.Y - 27)
+                text.Text = "[ " .. p.Name .. " ]"
+                text.Visible = true
+            else
+                text.Visible = false
+            end
+        else
+            dc()
+        end
+        wait(0.073)
+    end)
+end
+
+local function p_added(p)
+    if p.Character then
+        esp(p, p.Character)
+    end
+    p.CharacterAdded:Connect(function(cr)
+        esp(p, cr)
+    end)
+end
+
+-- Apply ESP to all players, including existing ones
+for i, p in pairs(ps:GetPlayers()) do
+    if p ~= lp then
+        p_added(p)
+    end
+end
+
+ps.PlayerAdded:Connect(p_added)
+
+-- Create a ScreenGui for the button
+local gui = Instance.new("ScreenGui")
+gui.Name = "CustomButtonsGui"
+gui.Parent = PlayerGui
+
+-- Create the button for ESP toggle confirmation
+local espButton = Instance.new("TextButton")
+espButton.Name = "ESPButton"
+espButton.Parent = gui
+espButton.AnchorPoint = Vector2.new(1, 0)
+espButton.Position = UDim2.new(1, -1020, 0, -30)  -- Adjust X position as needed
+espButton.Size = UDim2.new(0, 30, 0, 30)
+espButton.Font = Enum.Font.SourceSansBold
+espButton.TextSize = 18
+espButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+espButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+espButton.BackgroundTransparency = 0.5  -- Semi-transparent background
+espButton.TextStrokeTransparency = 1
+espButton.Text = "🐣"
+
+-- Add UICorner to make the button corners smooth
+local espButtonCorner = Instance.new("UICorner")
+espButtonCorner.CornerRadius = UDim.new(0, 5)  -- Adjust the corner radius as needed
+espButtonCorner.Parent = espButton
+
+-- Function to handle ESP toggle when the button is clicked
+espButton.MouseButton1Click:Connect(function()
+    local bindable = Instance.new("BindableFunction")
+
+    function bindable.OnInvoke(response)
+        if response == "Yes" then
+            espEnabled = true
+            -- Apply ESP to all players, including those already in game
+            for i, p in pairs(ps:GetPlayers()) do
+                if p ~= lp and p.Character then
+                    esp(p, p.Character)
+                end
+            end
+        elseif response == "No" then
+            espEnabled = false
+        end
+    end
+
+    -- Fetch the current player's headshot image
+    local playerName = Players.LocalPlayer.Name
+    local HeadshotImage = getPlayerHeadshotImage(playerName)
+
+    StarterGui:SetCore("SendNotification", {
+        Title = " ⚠️ ESP ⚠️",
+        Text = "Are You Sure?",
+        Duration = 8,
+        Callback = bindable,
+        Button1 = "Yes",
+        Button2 = "No",
+        Icon = HeadshotImage or ""  -- Set the headshot image as the icon, fallback to empty string if image not found
+    })
+end
