@@ -366,3 +366,10 @@ game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 10
 
 wait(0.5)
 end
+
+while true do 
+
+LocalPlayer.Data.Alone.Value = true
+
+wait(0.5)
+end
