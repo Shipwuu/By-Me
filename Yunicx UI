@@ -264,4 +264,4 @@ espButton.MouseButton1Click:Connect(function()
         Button2 = "No",
         Icon = HeadshotImage or ""  -- Set the headshot image as the icon, fallback to empty string if image not found
     })
-end
+end)
