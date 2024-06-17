@@ -406,6 +406,43 @@ button.MouseButton1Click:Connect(function()
     button.Text = "⚪"
 end)
 
+-- Place this at the beginning where you define your functions
+local StarterGui = game:GetService("StarterGui") -- Ensure this is defined at the top
+
+-- Function to send notifications
+local function sendNotification(partName)
+    StarterGui:SetCore("SendNotification", {
+        Title = partName,
+        Text = "Detected",
+        Duration = 5
+    })
+end
+
+-- Add this after the existing billboard addition code
+-- Adding the specified billboard
+addBillboardGuiToPart("emfpart2", "Emf2", Color3.fromRGB(0, 69, 90))
+
+-- Existing billboard additions
+addBillboardGuiToPart("Orb", "Orb", Color3.fromRGB(30, 144, 255))
+addBillboardGuiToPart("emfpart5", "Emf5", Color3.fromRGB(255, 0, 0))
+addBillboardGuiToPart("emfpart3", "Emf3", Color3.fromRGB(100, 140, 0))
+addBillboardGuiToPart("emfpart4", "Emf4", Color3.fromRGB(100, 69, 0))
+
+-- Send notifications for existing parts (only emf5 and Orb)
+for _, part in ipairs({"Orb", "emfpart5"}) do
+    local detectedPart = Workspace:FindFirstChild(part)
+    if detectedPart then
+        sendNotification(part)
+    end
+end
+
+-- Detecting new parts added to the workspace
+Workspace.ChildAdded:Connect(function(child)
+    if child.Name == "Orb" or child.Name == "emfpart5" then
+        sendNotification(child.Name)
+    end
+end)
+
 
 while true do
     game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 10
