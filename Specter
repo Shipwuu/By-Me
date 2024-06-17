@@ -406,8 +406,18 @@ button.MouseButton1Click:Connect(function()
     button.Text = "⚪"
 end)
 
--- Place this at the beginning where you define your functions
-local StarterGui = game:GetService("StarterGui") -- Ensure this is defined at the top
+-- Services
+local CoreGui = game:GetService("CoreGui")
+local Workspace = game:GetService("Workspace")
+local Players = game:GetService("Players")
+local Lighting = game:GetService("Lighting")
+local RunService = game:GetService("RunService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local StarterGui = game:GetService("StarterGui")
+
+local LocalPlayer = Players.LocalPlayer
+local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
 
 -- Function to send notifications
 local function sendNotification(partName)
@@ -418,7 +428,16 @@ local function sendNotification(partName)
     })
 end
 
--- Add this after the existing billboard addition code
+-- Function to handle PhantomDrain event
+local function handlePhantomDrain()
+    sendNotification("Phantom Drain")
+end
+
+-- Listen for PhantomDrain event
+ReplicatedStorage:WaitForChild("PhantomDrain").OnClientEvent:Connect(handlePhantomDrain)
+
+-- Existing code continues...
+
 -- Adding the specified billboard
 addBillboardGuiToPart("emfpart2", "Emf2", Color3.fromRGB(0, 69, 90))
 
@@ -442,6 +461,8 @@ Workspace.ChildAdded:Connect(function(child)
         sendNotification(child.Name)
     end
 end)
+
+-- Existing code continues...
 
 
 while true do
