@@ -387,7 +387,7 @@ buttonCorner.Parent = button
 
 -- Adjust button properties
 button.BackgroundColor3 = Color3.fromRGB(255, 255, 255)  -- Set background color to white
-button.BackgroundTransparency = 0.3  -- Set transparency to 50% (0 = fully opaque, 1 = fully transparent)
+button.BackgroundTransparency = 0.8  -- Set transparency to 50% (0 = fully opaque, 1 = fully transparent)
 button.BorderSizePixel = 5  -- Set border size to 1 pixel
 button.BorderColor3 = Color3.new(1, 1, 1)  -- Set border color to white
 
