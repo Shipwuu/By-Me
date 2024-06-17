@@ -154,7 +154,7 @@ local function addBillboardGuiToPart(name, text, color)
 end
 
 -- Adding the specified billboard
-addBillboardGuiToPart("emfpart2", "Emf2", Color3.fromRGB(0, 69, 90))
+addBillboardGuiToPart("emfpart2", "Emf2", Color3.fromRGB(0, 0, 255))
 
 -- Existing billboard additions
 addBillboardGuiToPart("Orb", "Orb", Color3.fromRGB(30, 144, 255))
