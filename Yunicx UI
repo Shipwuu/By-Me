@@ -1,3 +1,25 @@
+local Players = game:GetService("Players")
+
+-- Function to set ResetOnSpawn to false for a given ScreenGui
+local function setResetOnSpawnFalse(screenGui)
+    if screenGui then
+        screenGui.ResetOnSpawn = false
+    end
+end
+
+-- Function to traverse through all ScreenGui instances and set ResetOnSpawn to false
+local function setAllResetOnSpawnFalse()
+    local playerGui = Players.LocalPlayer:WaitForChild("PlayerGui")
+    for _, screenGui in pairs(playerGui:GetChildren()) do
+        setResetOnSpawnFalse(screenGui)
+    end
+end
+
+-- Call the function to set ResetOnSpawn to false for all ScreenGui instances
+setAllResetOnSpawnFalse()
+
+-- Your existing script continues here...
+
 -- Services
 local StarterGui = game:GetService("StarterGui")
 
