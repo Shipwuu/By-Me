@@ -269,26 +269,38 @@ espButton.MouseButton1Click:Connect(function()
     })
 end)
 
-local crownButton = Instance.new("TextButton")
-crownButton.Name = "CrownButton"
-crownButton.Size = UDim2.new(0.2, 0, 0.4, 0) -- Adjust size as needed
-crownButton.Position = UDim2.new(0.2, 0, 0.1, 0) -- Adjust position as needed
-crownButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-crownButton.BackgroundTransparency = 0.3
-crownButton.Text = "👑" -- Unicode character for the crown icon
-crownButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-crownButton.TextScaled = true
-crownButton.Font = Enum.Font.GothamBold
-crownButton.Parent = frame
+-- Services
+local StarterGui = game:GetService("StarterGui")
 
--- Add UICorner to the button
-local crownButtonCorner = Instance.new("UICorner")
-crownButtonCorner.CornerRadius = UDim.new(0.1, 0)
-crownButtonCorner.Parent = crownButton
+-- Create a ScreenGui for the button
+local gui = Instance.new("ScreenGui")
+gui.Name = "ConsoleButtonGui"
+gui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+gui.ResetOnSpawn = false
 
-crownButton.MouseButton1Click:Connect(function()
-    -- Add your functionality here
-    -- For example:
+-- Create the button
+local button = Instance.new("TextButton")
+button.Name = "OpenConsoleButton"
+button.Parent = gui
+button.AnchorPoint = Vector2.new(1, 0)
+button.Position = UDim2.new(1, -980, 0, -30)  -- Upper right corner positioning
+button.Size = UDim2.new(0, 30, 0, 30)
+button.Font = Enum.Font.SourceSansBold
+button.TextSize = 18
+button.TextColor3 = Color3.fromRGB(255, 255, 255)
+button.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+button.BackgroundTransparency = 0.5  -- Semi-transparent background
+button.TextStrokeTransparency = 1
+button.Text = "👑"
+
+-- Add UICorner to make the button corners smooth
+local buttonCorner = Instance.new("UICorner")
+buttonCorner.CornerRadius = UDim.new(0, 5)  -- Adjust the corner radius to 5
+buttonCorner.Parent = button
+
+-- Function to open the console when the button is clicked
+button.MouseButton1Click:Connect(function()
+    
     local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local Camera = workspace.CurrentCamera
@@ -616,4 +628,3 @@ LocalPlayer.CharacterAdded:Connect(function()
 end)
 
 end)
-
