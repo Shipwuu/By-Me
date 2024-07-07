@@ -582,13 +582,71 @@ local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local Camera = workspace.CurrentCamera
 
+-- Dummy implementations for StopFreecam and execCmd if not defined
+if not StopFreecam then
+    function StopFreecam()
+        -- Add your actual StopFreecam implementation here
+        print("StopFreecam called")
+    end
+end
+
+if not execCmd then
+    function execCmd(command)
+        -- Add your actual execCmd implementation here
+        print("execCmd called with command:", command)
+    end
+end
+
 -- Function to reset the camera to the local player
-local function resetCameraToLocalPlayer()
-    if LocalPlayer.Character then
-        local humanoid = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-        if humanoid then
-            Camera.CameraSubject = humanoid
-        end
+local function fixcam(speaker)
+    if not speaker or not speaker.Character then
+        print("Speaker or speaker's character is nil")
+        return
+    end
+
+    -- Function to stop free camera mode
+    StopFreecam()
+
+    -- Execute command to unview
+    execCmd('unview')
+
+    -- Destroy the current camera
+    if workspace.CurrentCamera then
+        workspace.CurrentCamera:Destroy()
+    end
+
+    -- Wait a short moment to ensure previous commands are processed
+    wait(0.1)
+
+    -- Wait until the character is fully loaded with a humanoid
+    repeat wait() until speaker.Character and speaker.Character:FindFirstChildWhichIsA('Humanoid')
+
+    local humanoid = speaker.Character:FindFirstChildWhichIsA('Humanoid')
+    if not humanoid then
+        print("Humanoid not found in character")
+        return
+    end
+
+    -- Create a new camera instance and set it up
+    local newCamera = Instance.new('Camera')
+    newCamera.Parent = workspace
+    workspace.CurrentCamera = newCamera
+
+    -- Set the camera subject to the player's humanoid
+    newCamera.CameraSubject = humanoid
+    newCamera.CameraType = Enum.CameraType.Custom
+
+    -- Set the player's camera properties
+    speaker.CameraMinZoomDistance = 0.5
+    speaker.CameraMaxZoomDistance = 400
+    speaker.CameraMode = Enum.CameraMode.Classic
+
+    -- Ensure the head is not anchored
+    local head = speaker.Character:FindFirstChild('Head')
+    if head then
+        head.Anchored = false
+    else
+        print("Head not found in character")
     end
 end
 
@@ -609,7 +667,7 @@ resetButton.Text = "Fix Cam"
 resetButton.TextSize = 14 -- Smaller text size
 resetButton.TextColor3 = Color3.fromRGB(255, 255, 255)  -- White text color
 resetButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)  -- Black background
-resetButton.BackgroundTransparency = 0.7  -- Semi-transparent background (adjust transparency as needed)
+resetButton.BackgroundTransparency = 0.3  -- Semi-transparent background (adjust transparency as needed)
 resetButton.Font = Enum.Font.GothamBold
 resetButton.Parent = screenGui
 
@@ -618,13 +676,13 @@ screenGuiCorner.CornerRadius = UDim.new(0.5, 0)  -- Adjust the corner radius
 screenGuiCorner.Parent = resetButton
 
 resetButton.MouseButton1Click:Connect(function()
-    resetCameraToLocalPlayer()
+    fixcam(LocalPlayer)
 end)
 
 -- Optional: Automatically reset the camera when the local player respawns
 LocalPlayer.CharacterAdded:Connect(function()
     wait(0.1) -- Small delay to ensure character is fully loaded
-    resetCameraToLocalPlayer()
+    fixcam(LocalPlayer)
 end)
 
 end)
