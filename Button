@@ -1,0 +1,115 @@
+local UserInputService = game:GetService("UserInputService")
+local LocalPlayer = game:GetService("Players").LocalPlayer
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+
+-- Create ScreenGui
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "KeyPresserGui"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = PlayerGui
+
+-- Function to create a draggable button
+local function createDraggableButton(position, text, keycode)
+    -- Create Draggable Outline Frame
+    local outlineFrame = Instance.new("Frame")
+    outlineFrame.Size = UDim2.new(0, 110, 0, 100)  -- Significantly larger height
+    outlineFrame.Position = position
+    outlineFrame.BackgroundTransparency = 0.5
+    outlineFrame.BackgroundColor3 = Color3.new(0.1, 0.1, 0.1)
+    outlineFrame.Active = true
+    outlineFrame.Draggable = true
+    outlineFrame.Parent = screenGui
+
+    -- Add UI Corner to Outline Frame
+    local outlineUiCorner = Instance.new("UICorner")
+    outlineUiCorner.CornerRadius = UDim.new(0.2, 0)
+    outlineUiCorner.Parent = outlineFrame
+
+    -- Create Inner Frame
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(1, -10, 1, -30)  -- Adjusted height to fit within the larger outline
+    frame.Position = UDim2.new(0, 5, 0, 5)
+    frame.BackgroundTransparency = 0.3
+    frame.BackgroundColor3 = Color3.new(0, 0, 0)
+    frame.Parent = outlineFrame
+
+    -- Add UI Corner to Inner Frame
+    local uiCorner = Instance.new("UICorner")
+    uiCorner.CornerRadius = UDim.new(0.2, 0)
+    uiCorner.Parent = frame
+
+    -- Create TextButton
+    local button = Instance.new("TextButton")
+    button.Size = UDim2.new(1, 0, 1, 0)
+    button.Position = UDim2.new(0, 0, 0, 0)
+    button.Text = text
+    button.TextSize = 20
+    button.TextColor3 = Color3.new(1, 1, 1)
+    button.BackgroundTransparency = 1
+    button.Parent = frame
+
+    -- Function to simulate key press and hold
+    local function simulateKeyPress()
+        keypress(keycode)  -- Key code for the specified key
+    end
+
+    -- Function to simulate key release
+    local function simulateKeyRelease()
+        keyrelease(keycode)  -- Key release for the specified key
+    end
+
+    -- Connect button press to simulate key press and hold
+    button.MouseButton1Down:Connect(simulateKeyPress)
+    button.MouseButton1Up:Connect(simulateKeyRelease)
+
+    -- Make the outline frame draggable
+    local dragging = false
+    local dragInput
+    local dragStart
+    local startPos
+
+    local function update(input)
+        local delta = input.Position - dragStart
+        outlineFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+
+    outlineFrame.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = outlineFrame.Position
+
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
+        end
+    end)
+
+    outlineFrame.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType.Touch then
+            dragInput = input
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(function(input)
+        if dragging and input == dragInput then
+            update(input)
+        end
+    end)
+end
+
+-- Calculate positions for the buttons
+local screenWidth = workspace.CurrentCamera.ViewportSize.X
+local screenHeight = workspace.CurrentCamera.ViewportSize.Y
+local buttonWidth = 110
+local buttonHeight = 100
+
+-- Button on the left
+local leftButtonPosition = UDim2.new(0.2, -buttonWidth / 2, 0.5, -buttonHeight / 2)
+createDraggableButton(leftButtonPosition, "Press [", 219)
+
+-- Button on the right
+local rightButtonPosition = UDim2.new(0.8, -buttonWidth / 2, 0.5, -buttonHeight / 2)
+createDraggableButton(rightButtonPosition, "Press ]", 221)
