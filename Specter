@@ -279,85 +279,170 @@ for G, x in pairs(workspace.House:GetChildren()) do
     end
 end
 
-local c = workspace.CurrentCamera
-local ps = game:GetService("Players")
-local lp = ps.LocalPlayer
-local rs = game:GetService("RunService")
+-- Esp Script
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local COREGUI = game:GetService("CoreGui")
+local LocalPlayer = Players.LocalPlayer
 
-local function esp(p, cr)
-    local h = cr:WaitForChild("Humanoid")
-    local hrp = cr:WaitForChild("Head")
+-- Variables
+local ESPenabled = false
+local espTransparency = 0.4  -- Adjust transparency as needed
+local friends = {}
 
-    local text = Drawing.new("Text")
-    text.Visible = false
-    text.Center = true
-    text.Outline = false 
-    text.Font = 3
-    text.Size = 16.16
-    text.Color = Color3.new(170, 170, 170)
-
-    local connection
-    local connection2
-    local connection3
-
-    local function dc()
-        text.Visible = false
-        text:Remove()
-        if connection then
-            connection:Disconnect()
-            connection = nil 
-        end
-        if connection2 then
-            connection2:Disconnect()
-            connection2 = nil 
-        end
-        if connection3 then
-            connection3:Disconnect()
-            connection3 = nil 
-        end
-    end
-
-    connection2 = cr.AncestryChanged:Connect(function(_, parent)
-        if not parent then
-            dc()
-        end
+-- Fetch friends list
+local function updateFriendsList()
+    friends = {}
+    local success, result = pcall(function()
+        return Players:GetFriendsAsync(LocalPlayer.UserId)
     end)
-
-    connection3 = h.HealthChanged:Connect(function(v)
-        if (v <= 0) or (h:GetState() == Enum.HumanoidStateType.Dead) then
-            dc()
+    if success then
+        for _, friend in pairs(result:GetCurrentPage()) do
+            friends[friend.Username] = true
         end
-    end)
-
-    connection = rs.RenderStepped:Connect(function()
-        local hrp_pos, hrp_onscreen = c:WorldToViewportPoint(hrp.Position)
-        if hrp_onscreen then
-            text.Position = Vector2.new(hrp_pos.X, hrp_pos.Y - 27)
-            text.Text = "[ "..p.Name.." ]"
-            text.Visible = true
-        else
-            text.Visible = false
-        end
-        wait(0.073)
-    end)
-end
-
-local function p_added(p)
-    if p.Character then
-        esp(p, p.Character)
-    end
-    p.CharacterAdded:Connect(function(cr)
-        esp(p, cr)
-    end)
-end
-
-for i, p in next, ps:GetPlayers() do 
-    if p ~= lp then
-        p_added(p)
+        print("Friends list updated:", friends)
+    else
+        warn("Failed to fetch friends list:", result)
     end
 end
 
-ps.PlayerAdded:Connect(p_added)
+-- Initial fetch of the friends list
+updateFriendsList()
+
+-- Utility Functions
+function round(num, numDecimalPlaces)
+    local mult = 10^(numDecimalPlaces or 0)
+    return math.floor(num * mult + 0.5) / mult
+end
+
+function getRoot(char)
+    return char:FindFirstChild("HumanoidRootPart") or char:FindFirstChild("Torso") or char:FindFirstChild("UpperTorso")
+end
+
+function isFriend(plr)
+    return friends[plr.Name] or false
+end
+
+function ESP(plr)
+    task.spawn(function()
+        for i, v in pairs(COREGUI:GetChildren()) do
+            if v.Name == plr.Name .. '_ESP' then
+                v:Destroy()
+            end
+        end
+        wait()
+        if plr.Character and plr.Name ~= Players.LocalPlayer.Name and not COREGUI:FindFirstChild(plr.Name .. '_ESP') then
+            local ESPholder = Instance.new("Folder")
+            ESPholder.Name = plr.Name .. '_ESP'
+            ESPholder.Parent = COREGUI
+            repeat wait(1) until plr.Character and getRoot(plr.Character) and plr.Character:FindFirstChildOfClass("Humanoid")
+            if plr.Character and plr.Character:FindFirstChild('Head') then
+                local BillboardGui = Instance.new("BillboardGui")
+                BillboardGui.Adornee = plr.Character.Head
+                BillboardGui.Name = plr.Name
+                BillboardGui.Parent = ESPholder
+                BillboardGui.Size = UDim2.new(0, 150, 0, 50)
+                BillboardGui.StudsOffset = Vector3.new(0, 1.5, 0)
+                BillboardGui.AlwaysOnTop = true
+
+                local TextLabel1 = Instance.new("TextLabel")
+                TextLabel1.Parent = BillboardGui
+                TextLabel1.BackgroundTransparency = 1
+                TextLabel1.Position = UDim2.new(0, 0, 0, 0)
+                TextLabel1.Size = UDim2.new(0, 150, 0, 25)
+                TextLabel1.Font = Enum.Font.GothamBold
+                TextLabel1.TextSize = 18
+                TextLabel1.TextColor3 = isFriend(plr) and Color3.fromRGB(0, 162, 255) or Color3.new(1, 1, 1)  -- Blue for friends, white for others
+                TextLabel1.TextStrokeTransparency = 0.5
+                TextLabel1.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)  -- Black outline
+                TextLabel1.TextYAlignment = Enum.TextYAlignment.Top
+                TextLabel1.Text = plr.DisplayName .. " (" .. plr.Name .. ")"
+
+                local TextLabel2 = Instance.new("TextLabel")
+                TextLabel2.Parent = BillboardGui
+                TextLabel2.BackgroundTransparency = 1
+                TextLabel2.Position = UDim2.new(0, 0, 0, 20)  -- Close the distance between the name and studs
+                TextLabel2.Size = UDim2.new(0, 150, 0, 25)
+                TextLabel2.Font = Enum.Font.GothamBold
+                TextLabel2.TextSize = 16
+                TextLabel2.TextColor3 = Color3.new(1, 1, 1)
+                TextLabel2.TextStrokeTransparency = 0.5
+                TextLabel2.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)  -- Black outline
+                TextLabel2.TextYAlignment = Enum.TextYAlignment.Top
+
+                local espLoopFunc
+                local teamChange
+                local addedFunc
+                addedFunc = plr.CharacterAdded:Connect(function()
+                    if ESPenabled then
+                        espLoopFunc:Disconnect()
+                        teamChange:Disconnect()
+                        ESPholder:Destroy()
+                        repeat wait(1) until getRoot(plr.Character) and plr.Character:FindFirstChildOfClass("Humanoid")
+                        ESP(plr)
+                        addedFunc:Disconnect()
+                    else
+                        teamChange:Disconnect()
+                        addedFunc:Disconnect()
+                    end
+                end)
+                teamChange = plr:GetPropertyChangedSignal("TeamColor"):Connect(function()
+                    if ESPenabled then
+                        espLoopFunc:Disconnect()
+                        addedFunc:Disconnect()
+                        ESPholder:Destroy()
+                        repeat wait(1) until getRoot(plr.Character) and plr.Character:FindFirstChildOfClass("Humanoid")
+                        ESP(plr)
+                        teamChange:Disconnect()
+                    else
+                        teamChange:Disconnect()
+                    end
+                end)
+                local function espLoop()
+                    if COREGUI:FindFirstChild(plr.Name .. '_ESP') then
+                        if plr.Character and getRoot(plr.Character) and plr.Character:FindFirstChildOfClass("Humanoid") and Players.LocalPlayer.Character and getRoot(Players.LocalPlayer.Character) and Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
+                            local pos = math.floor((getRoot(Players.LocalPlayer.Character).Position - getRoot(plr.Character).Position).magnitude)
+                            TextLabel2.Text = pos .. " studs"  -- Show only the studs distance
+                        end
+                    else
+                        teamChange:Disconnect()
+                        addedFunc:Disconnect()
+                        espLoopFunc:Disconnect()
+                    end
+                end
+                espLoopFunc = RunService.RenderStepped:Connect(espLoop)
+            end
+        end
+    end
+end
+
+-- Continuously check for new players and update ESP
+RunService.RenderStepped:Connect(function()
+    if ESPenabled then
+        for _, plr in pairs(Players:GetPlayers()) do
+            if not COREGUI:FindFirstChild(plr.Name .. '_ESP') and plr ~= LocalPlayer then
+                ESP(plr)
+            end
+        end
+    end
+end)
+
+-- Automatically apply ESP to new players if enabled
+Players.PlayerAdded:Connect(function(plr)
+    if ESPenabled then
+        ESP(plr)
+    end
+end)
+
+-- Remove ESP when a player leaves the game
+Players.PlayerRemoving:Connect(function(plr)
+    for i, v in pairs(COREGUI:GetChildren()) do
+        if v.Name == plr.Name .. '_ESP' then
+            v:Destroy()
+        end
+    end
+end)
+-- End Esp Script
 
 game:GetService("ReplicatedStorage"):WaitForChild("Start"):FireServer()
 
