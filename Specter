@@ -466,14 +466,34 @@ end)
 
 
 while true do
-    game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 10
+    game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 13
     wait(0.5)
 end
 
 while true do 
+
+    local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+if LocalPlayer:FindFirstChild("Data") and LocalPlayer.Data:FindFirstChild("Alone") then
     LocalPlayer.Data.Alone.Value = true
+else
+    -- If the Data or Alone value doesn't exist, you may need to create them first
+    -- Example:
+    -- local Data = Instance.new("Folder")
+    -- Data.Name = "Data"
+    -- Data.Parent = LocalPlayer
+    -- 
+    -- local Alone = Instance.new("BoolValue")
+    -- Alone.Name = "Alone"
+    -- Alone.Value = true
+    -- Alone.Parent = Data
+end
+
     wait(0.5)
 end
+
+while true do
 
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
@@ -481,7 +501,15 @@ local LocalPlayer = Players.LocalPlayer
 LocalPlayer.CameraMode = Enum.CameraMode.LockFirstPerson
 LocalPlayer.CameraMaxZoomDistance = 999 -- Set to 0 for maximum zoom distance
 
+wait(10)
+end
+
+while true do
+
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
 LocalPlayer.CameraMode = Enum.CameraMode.Classic
+
+wait(1)
+end
