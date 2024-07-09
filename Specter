@@ -463,7 +463,6 @@ Workspace.ChildAdded:Connect(function(child)
 end)
 
 -- Existing code continues...
-
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
@@ -472,16 +471,19 @@ local function setWalkSpeed(speed)
     while true do
         if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
             LocalPlayer.Character.Humanoid.WalkSpeed = speed
+            print("Set WalkSpeed to", speed)
         end
         wait(0.5)
     end
 end
 
 -- Function to set Alone value
+
 local function setAloneValue()
     while true do
         if LocalPlayer:FindFirstChild("Data") and LocalPlayer.Data:FindFirstChild("Alone") then
             LocalPlayer.Data.Alone.Value = true
+            print("Set Alone value to true")
         else
             -- If the Data or Alone value doesn't exist, you may need to create them first
             -- Example:
@@ -498,19 +500,23 @@ local function setAloneValue()
     end
 end
 
--- Function to set CameraMode and CameraMaxZoomDistance
-local function setCameraProperties()
-    while true do
-        LocalPlayer.CameraMode = Enum.CameraMode.LockFirstPerson
-        LocalPlayer.CameraMaxZoomDistance = 999 -- Set to 0 for maximum zoom distance
-        wait(10)
-    end
+-- Function to set CameraMaxZoomDistance
+local function setCameraMaxZoomDistance()
+    wait(2)  -- Pause for 2 seconds
+    LocalPlayer.CameraMaxZoomDistance = 999  -- Set to 0 for maximum zoom distance
+    print("Set CameraMaxZoomDistance to 999")
+end
+
+-- Function to set CameraMode to Classic
+local function setCameraMode()
+    wait(4)  -- Pause for 4 seconds
+    LocalPlayer.CameraMode = Enum.CameraMode.Classic
+    print("Set CameraMode to Classic")
 end
 
 -- Start the functions in separate threads
 spawn(function() setWalkSpeed(13) end)
 spawn(function() setAloneValue() end)
-spawn(function() setCameraProperties() end)
+spawn(function() setCameraMaxZoomDistance() end)
+spawn(function() setCameraMode() end)
 
--- Set CameraMode to Classic
-LocalPlayer.CameraMode = Enum.CameraMode.Classic
