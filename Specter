@@ -480,3 +480,8 @@ local LocalPlayer = Players.LocalPlayer
 
 LocalPlayer.CameraMode = Enum.CameraMode.LockFirstPerson
 LocalPlayer.CameraMaxZoomDistance = 999 -- Set to 0 for maximum zoom distance
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+LocalPlayer.CameraMode = Enum.CameraMode.Classic
