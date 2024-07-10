@@ -279,85 +279,8 @@ for G, x in pairs(workspace.House:GetChildren()) do
     end
 end
 
-local c = workspace.CurrentCamera
-local ps = game:GetService("Players")
-local lp = ps.LocalPlayer
-local rs = game:GetService("RunService")
+-- Here
 
-local function esp(p, cr)
-    local h = cr:WaitForChild("Humanoid")
-    local hrp = cr:WaitForChild("Head")
-
-    local text = Drawing.new("Text")
-    text.Visible = false
-    text.Center = true
-    text.Outline = false 
-    text.Font = 3
-    text.Size = 16.16
-    text.Color = Color3.new(170, 170, 170)
-
-    local connection
-    local connection2
-    local connection3
-
-    local function dc()
-        text.Visible = false
-        text:Remove()
-        if connection then
-            connection:Disconnect()
-            connection = nil 
-        end
-        if connection2 then
-            connection2:Disconnect()
-            connection2 = nil 
-        end
-        if connection3 then
-            connection3:Disconnect()
-            connection3 = nil 
-        end
-    end
-
-    connection2 = cr.AncestryChanged:Connect(function(_, parent)
-        if not parent then
-            dc()
-        end
-    end)
-
-    connection3 = h.HealthChanged:Connect(function(v)
-        if (v <= 0) or (h:GetState() == Enum.HumanoidStateType.Dead) then
-            dc()
-        end
-    end)
-
-    connection = rs.RenderStepped:Connect(function()
-        local hrp_pos, hrp_onscreen = c:WorldToViewportPoint(hrp.Position)
-        if hrp_onscreen then
-            text.Position = Vector2.new(hrp_pos.X, hrp_pos.Y - 27)
-            text.Text = "[ "..p.Name.." ]"
-            text.Visible = true
-        else
-            text.Visible = false
-        end
-        wait(0.073)
-    end)
-end
-
-local function p_added(p)
-    if p.Character then
-        esp(p, p.Character)
-    end
-    p.CharacterAdded:Connect(function(cr)
-        esp(p, cr)
-    end)
-end
-
-for i, p in next, ps:GetPlayers() do 
-    if p ~= lp then
-        p_added(p)
-    end
-end
-
-ps.PlayerAdded:Connect(p_added)
 
 game:GetService("ReplicatedStorage"):WaitForChild("Start"):FireServer()
 
@@ -465,51 +388,58 @@ end)
 -- Existing code continues...
 
 
-while true do
-    game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 13
-    wait(0.5)
-end
-
-while true do 
-
-    local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-
-if LocalPlayer:FindFirstChild("Data") and LocalPlayer.Data:FindFirstChild("Alone") then
-    LocalPlayer.Data.Alone.Value = true
-else
-    -- If the Data or Alone value doesn't exist, you may need to create them first
-    -- Example:
-    -- local Data = Instance.new("Folder")
-    -- Data.Name = "Data"
-    -- Data.Parent = LocalPlayer
-    -- 
-    -- local Alone = Instance.new("BoolValue")
-    -- Alone.Name = "Alone"
-    -- Alone.Value = true
-    -- Alone.Parent = Data
-end
-
-    wait(0.5)
-end
-
-while true do
-
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
-LocalPlayer.CameraMode = Enum.CameraMode.LockFirstPerson
-LocalPlayer.CameraMaxZoomDistance = 999 -- Set to 0 for maximum zoom distance
-
-wait(10)
+-- Function to set WalkSpeed
+local function setWalkSpeed(speed)
+    while true do
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+            LocalPlayer.Character.Humanoid.WalkSpeed = speed
+            print("Set WalkSpeed to", speed)
+        end
+        wait(0.5)
+    end
 end
 
-while true do
-
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-
-LocalPlayer.CameraMode = Enum.CameraMode.Classic
-
-wait(1)
+-- Function to set Alone value
+local function setAloneValue()
+    while true do
+        if LocalPlayer:FindFirstChild("Data") and LocalPlayer.Data:FindFirstChild("Alone") then
+            LocalPlayer.Data.Alone.Value = true
+            print("Set Alone value to true")
+        else
+            -- If the Data or Alone value doesn't exist, you may need to create them first
+            -- Example:
+            -- local Data = Instance.new("Folder")
+            -- Data.Name = "Data"
+            -- Data.Parent = LocalPlayer
+            -- 
+            -- local Alone = Instance.new("BoolValue")
+            -- Alone.Name = "Alone"
+            -- Alone.Value = true
+            -- Alone.Parent = Data
+        end
+        wait(0.5)
+    end
 end
+
+-- Function to set CameraMaxZoomDistance
+local function setCameraMaxZoomDistance()
+    wait(2)  -- Pause for 2 seconds
+    LocalPlayer.CameraMaxZoomDistance = 999  -- Set to 0 for maximum zoom distance
+    print("Set CameraMaxZoomDistance to 999")
+end
+
+-- Function to set CameraMode to Classic
+local function setCameraMode()
+    wait(4)  -- Pause for 4 seconds
+    LocalPlayer.CameraMode = Enum.CameraMode.Classic
+    print("Set CameraMode to Classic")
+end
+
+-- Start the functions in separate threads
+spawn(function() setWalkSpeed(13) end)
+spawn(function() setAloneValue() end)
+spawn(function() setCameraMaxZoomDistance() end)
+spawn(function() setCameraMode() end)
