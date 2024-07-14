@@ -610,7 +610,7 @@ local function setCameraMode()
 end
 
 -- Start the functions in separate threads
-spawn(function() setWalkSpeed(13) end)
+spawn(function() setWalkSpeed(11) end)
 spawn(function() setAloneValue() end)
 spawn(function() setCameraMaxZoomDistance() end)
 spawn(function() setCameraMode() end)
