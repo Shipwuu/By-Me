@@ -605,6 +605,57 @@ spawn(function() setAloneValue() end)
 spawn(function() setCameraMaxZoomDistance() end)
 spawn(function() setCameraMode() end)
 
+-- Create God Button
+local godButton = Instance.new("TextButton")
+godButton.Name = "GodButton"
+godButton.Parent = sanityGui
+godButton.AnchorPoint = Vector2.new(0, 0.5)
+godButton.Position = UDim2.new(1, -500, 0, 50)  -- Positioned below sanityLabel (adjust as needed)
+godButton.Size = UDim2.new(0, 140, 0, 30)
+godButton.Font = Enum.Font.SourceSansBold
+godButton.TextSize = 18
+godButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+godButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)  -- Red color for visibility
+godButton.BackgroundTransparency = 0.7
+godButton.TextStrokeTransparency = 0
+godButton.Text = "God Mode"
+
+-- God Button Functionality
+godButton.MouseButton1Click:Connect(function()
+    local Cam = workspace.CurrentCamera
+    local speaker = Players.LocalPlayer
+    local Pos, Char = Cam.CFrame, speaker.Character
+    local Human = Char and Char:FindFirstChildWhichIsA("Humanoid")
+    local nHuman = Human and Human:Clone()
+
+    if nHuman then
+        nHuman.Parent = Char
+        speaker.Character = nil
+        nHuman:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false)
+        nHuman:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
+        nHuman:SetStateEnabled(Enum.HumanoidStateType.GettingUp, false)
+        nHuman.BreakJointsOnDeath = false
+        Human:Destroy()
+        speaker.Character = Char
+        Cam.CameraSubject = nHuman
+        Cam.CFrame = wait() and Pos
+        nHuman.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
+
+        local Script = Char:FindFirstChild("Animate")
+        if Script then
+            Script.Disabled = true
+            wait()
+            Script.Disabled = false
+        end
+
+        nHuman.Health = nHuman.MaxHealth
+    else
+        warn("Failed to clone Humanoid or Humanoid not found!")
+    end
+end)
+
+
+
 -- Services
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
@@ -806,52 +857,3 @@ while true do
     setWalkSpeed(currentSpeed)
     wait(0.5)
 end
-
--- Create God Button
-local godButton = Instance.new("TextButton")
-godButton.Name = "GodButton"
-godButton.Parent = sanityGui
-godButton.AnchorPoint = Vector2.new(0, 0.5)
-godButton.Position = UDim2.new(1, -500, 0, 50)  -- Positioned below sanityLabel (adjust as needed)
-godButton.Size = UDim2.new(0, 140, 0, 30)
-godButton.Font = Enum.Font.SourceSansBold
-godButton.TextSize = 18
-godButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-godButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)  -- Red color for visibility
-godButton.BackgroundTransparency = 0.7
-godButton.TextStrokeTransparency = 0
-godButton.Text = "God Mode"
-
--- God Button Functionality
-godButton.MouseButton1Click:Connect(function()
-    local Cam = workspace.CurrentCamera
-    local speaker = Players.LocalPlayer
-    local Pos, Char = Cam.CFrame, speaker.Character
-    local Human = Char and Char:FindFirstChildWhichIsA("Humanoid")
-    local nHuman = Human and Human:Clone()
-
-    if nHuman then
-        nHuman.Parent = Char
-        speaker.Character = nil
-        nHuman:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false)
-        nHuman:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
-        nHuman:SetStateEnabled(Enum.HumanoidStateType.GettingUp, false)
-        nHuman.BreakJointsOnDeath = false
-        Human:Destroy()
-        speaker.Character = Char
-        Cam.CameraSubject = nHuman
-        Cam.CFrame = wait() and Pos
-        nHuman.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
-
-        local Script = Char:FindFirstChild("Animate")
-        if Script then
-            Script.Disabled = true
-            wait()
-            Script.Disabled = false
-        end
-
-        nHuman.Health = nHuman.MaxHealth
-    else
-        warn("Failed to clone Humanoid or Humanoid not found!")
-    end
-end)
