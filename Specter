@@ -610,8 +610,8 @@ local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
 -- Variables
-local currentSpeed = 10 -- Default WalkSpeed
-local speedStep = 2 -- Increment/Decrement step for speed
+local currentSpeed = 16 -- Default WalkSpeed
+local speedStep = 1 -- Increment/Decrement step for speed
 
 -- Function to set WalkSpeed
 local function setWalkSpeed(speed)
@@ -629,44 +629,52 @@ sanityGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 local speedFrame = Instance.new("Frame")
 speedFrame.Name = "SpeedFrame"
 speedFrame.Parent = sanityGui
-speedFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-speedFrame.Position = UDim2.new(0.5, 0, 0.85, 0)  -- Adjust position below the start button
-speedFrame.Size = UDim2.new(0, 200, 0, 60)
+speedFrame.AnchorPoint = Vector2.new(0, 0.5)
+speedFrame.Position = UDim2.new(1, -289, 0, 150)  -- Adjust X and Y positions as needed
+speedFrame.Size = UDim2.new(0, 140, 0, 60)  -- Height adjusted for buttons
 speedFrame.BackgroundColor3 = Color3.fromRGB(0, 128, 255)
 speedFrame.BackgroundTransparency = 0.7
 speedFrame.BorderSizePixel = 0
 
--- Label to show current speed
-local speedLabel = Instance.new("TextLabel")
-speedLabel.Name = "SpeedLabel"
-speedLabel.Parent = speedFrame
-speedLabel.AnchorPoint = Vector2.new(0.5, 0.5)
-speedLabel.Position = UDim2.new(0.5, 0, 0.5, 0)
-speedLabel.Size = UDim2.new(1, -20, 0.5, -10)
-speedLabel.Font = Enum.Font.GothamBold
-speedLabel.TextSize = 18
-speedLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-speedLabel.BackgroundTransparency = 0
-speedLabel.TextStrokeTransparency = 0
-
--- Function to update speed label
-local function updateSpeedLabel()
-    speedLabel.Text = "Speed: " .. tostring(currentSpeed)
-end
-
--- Initial label update
-updateSpeedLabel()
-
 -- Create Buttons
-local buttonSize = UDim2.new(0, 60, 0, 40)  -- Size of each button
-local buttonSpacing = 10  -- Space between buttons
+local buttonSize = UDim2.new(0, 40, 0, 30)  -- Size of each button
+local buttonSpacing = 5  -- Space between buttons
+
+-- Decrease Button
+local decreaseButton = Instance.new("TextButton")
+decreaseButton.Name = "DecreaseButton"
+decreaseButton.Parent = speedFrame
+decreaseButton.AnchorPoint = Vector2.new(0, 0.5)
+decreaseButton.Position = UDim2.new(0, 0, 0.5, 0)
+decreaseButton.Size = buttonSize
+decreaseButton.Font = Enum.Font.SourceSansBold
+decreaseButton.TextSize = 18
+decreaseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+decreaseButton.BackgroundColor3 = Color3.fromRGB(0, 128, 255)
+decreaseButton.BackgroundTransparency = 0.7
+decreaseButton.TextStrokeTransparency = 0
+decreaseButton.Text = "-"
+
+-- Speed Display
+local speedDisplay = Instance.new("TextLabel")
+speedDisplay.Name = "SpeedDisplay"
+speedDisplay.Parent = speedFrame
+speedDisplay.AnchorPoint = Vector2.new(0.5, 0.5)
+speedDisplay.Position = UDim2.new(0.5, 0, 0.5, 0)
+speedDisplay.Size = UDim2.new(0, 60, 0, 30)
+speedDisplay.Font = Enum.Font.SourceSansBold
+speedDisplay.TextSize = 18
+speedDisplay.TextColor3 = Color3.fromRGB(255, 255, 255)
+speedDisplay.BackgroundTransparency = 0.7
+speedDisplay.TextStrokeTransparency = 0
+speedDisplay.Text = "Speed: " .. tostring(currentSpeed)
 
 -- Increase Button
 local increaseButton = Instance.new("TextButton")
 increaseButton.Name = "IncreaseButton"
 increaseButton.Parent = speedFrame
-increaseButton.AnchorPoint = Vector2.new(0.5, 0.5)
-increaseButton.Position = UDim2.new(0.5, 0, 1, -buttonSize.Y.Offset - buttonSpacing)
+increaseButton.AnchorPoint = Vector2.new(1, 0.5)
+increaseButton.Position = UDim2.new(1, 0, 0.5, 0)
 increaseButton.Size = buttonSize
 increaseButton.Font = Enum.Font.SourceSansBold
 increaseButton.TextSize = 18
@@ -676,20 +684,13 @@ increaseButton.BackgroundTransparency = 0.7
 increaseButton.TextStrokeTransparency = 0
 increaseButton.Text = "+"
 
--- Decrease Button
-local decreaseButton = Instance.new("TextButton")
-decreaseButton.Name = "DecreaseButton"
-decreaseButton.Parent = speedFrame
-decreaseButton.AnchorPoint = Vector2.new(0.5, 0.5)
-decreaseButton.Position = UDim2.new(0.5, -buttonSize.X.Offset - buttonSpacing/2, 1, -buttonSize.Y.Offset - buttonSpacing)
-decreaseButton.Size = buttonSize
-decreaseButton.Font = Enum.Font.SourceSansBold
-decreaseButton.TextSize = 18
-decreaseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-decreaseButton.BackgroundColor3 = Color3.fromRGB(0, 128, 255)
-decreaseButton.BackgroundTransparency = 0.7
-decreaseButton.TextStrokeTransparency = 0
-decreaseButton.Text = "-"
+-- Function to update speed label
+local function updateSpeedLabel()
+    speedDisplay.Text = "Speed: " .. tostring(currentSpeed)
+end
+
+-- Initial label update
+updateSpeedLabel()
 
 -- Increase Button Functionality
 increaseButton.MouseButton1Click:Connect(function()
