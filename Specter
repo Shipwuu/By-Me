@@ -683,6 +683,7 @@ end
 -- Create GUI
 local sanityGui = Instance.new("ScreenGui")
 sanityGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+sanityGui.ResetOnSpawn = false
 
 -- Create Speed Frame
 local speedFrame = Instance.new("Frame")
@@ -778,6 +779,7 @@ local LocalPlayer = Players.LocalPlayer
 -- Create GUI
 local sanityGui = Instance.new("ScreenGui")
 sanityGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+sanityGui.ResetOnSpawn = false
 
 -- Create Speed Frame
 local speedFrame = Instance.new("Frame")
