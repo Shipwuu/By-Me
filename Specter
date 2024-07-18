@@ -646,3 +646,39 @@ if nHuman then
 else
     warn("Failed to clone Humanoid or Humanoid not found!")
 end
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+-- Function to allow unlimited backpack items
+local function allowUnlimitedBackpack(player)
+    local backpack = player:FindFirstChild("Backpack")
+    if backpack then
+        -- Disable the backpack's limit check
+        local metatable = getrawmetatable(backpack)
+        local oldNamecall = metatable.__namecall
+        setreadonly(metatable, false)
+
+        metatable.__namecall = newcclosure(function(self, ...)
+            local method = getnamecallmethod()
+            if method == "GetChildren" then
+                local items = oldNamecall(self, ...)
+                -- Pretend there are fewer items if the limit is reached
+                if #items >= 100 then
+                    return {}
+                end
+                return items
+            end
+            return oldNamecall(self, ...)
+        end)
+        setreadonly(metatable, true)
+    end
+end
+
+-- Apply the function to the local player
+allowUnlimitedBackpack(LocalPlayer)
+
+-- Ensure the function is applied if the player respawns
+LocalPlayer.CharacterAdded:Connect(function()
+    allowUnlimitedBackpack(LocalPlayer)
+end)
