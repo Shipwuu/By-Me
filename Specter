@@ -563,16 +563,6 @@ end)
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
--- Function to set WalkSpeed
-local function setWalkSpeed(speed)
-    while true do
-        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-            LocalPlayer.Character.Humanoid.WalkSpeed = speed
-            print("Set WalkSpeed to", speed)
-        end
-        wait(0.5)
-    end
-end
 
 -- Function to set Alone value
 local function setAloneValue()
@@ -611,10 +601,112 @@ local function setCameraMode()
 end
 
 -- Start the functions in separate threads
-spawn(function() setWalkSpeed(10) end)
 spawn(function() setAloneValue() end)
 spawn(function() setCameraMaxZoomDistance() end)
 spawn(function() setCameraMode() end)
+
+-- Services
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local UserInputService = game:GetService("UserInputService")
+
+-- Variables
+local currentSpeed = 16 -- Default WalkSpeed
+local speedStep = 1 -- Increment/Decrement step for speed
+
+-- Function to set WalkSpeed
+local function setWalkSpeed(speed)
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+        LocalPlayer.Character.Humanoid.WalkSpeed = speed
+        print("Set WalkSpeed to", speed)
+    end
+end
+
+-- Create GUI
+local sanityGui = Instance.new("ScreenGui")
+sanityGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+
+-- Frame to display current speed
+local speedFrame = Instance.new("Frame")
+speedFrame.Name = "SpeedFrame"
+speedFrame.Parent = sanityGui
+speedFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+speedFrame.Position = UDim2.new(0.5, 0, 0.9, 0)
+speedFrame.Size = UDim2.new(0, 140, 0, 50)
+speedFrame.BackgroundColor3 = Color3.fromRGB(0, 128, 255)
+speedFrame.BackgroundTransparency = 0.7
+speedFrame.BorderSizePixel = 0
+
+-- Label to show current speed
+local speedLabel = Instance.new("TextLabel")
+speedLabel.Name = "SpeedLabel"
+speedLabel.Parent = speedFrame
+speedLabel.AnchorPoint = Vector2.new(0.5, 0.5)
+speedLabel.Position = UDim2.new(0.5, 0, 0.5, 0)
+speedLabel.Size = UDim2.new(1, -10, 1, -10)
+speedLabel.Font = Enum.Font.SourceSansBold
+speedLabel.TextSize = 18
+speedLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+speedLabel.BackgroundTransparency = 1
+speedLabel.TextStrokeTransparency = 0
+
+-- Function to update speed label
+local function updateSpeedLabel()
+    speedLabel.Text = "Speed: " .. tostring(currentSpeed)
+end
+
+-- Initial label update
+updateSpeedLabel()
+
+-- Create + button
+local increaseButton = Instance.new("TextButton")
+increaseButton.Name = "IncreaseButton"
+increaseButton.Parent = sanityGui
+increaseButton.AnchorPoint = Vector2.new(0.5, 0.5)
+increaseButton.Position = UDim2.new(0.5, 75, 0.9, 0)
+increaseButton.Size = UDim2.new(0, 40, 0, 40)
+increaseButton.Font = Enum.Font.SourceSansBold
+increaseButton.TextSize = 18
+increaseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+increaseButton.BackgroundColor3 = Color3.fromRGB(0, 128, 255)
+increaseButton.BackgroundTransparency = 0.7
+increaseButton.TextStrokeTransparency = 0
+increaseButton.Text = "+"
+
+-- Create - button
+local decreaseButton = Instance.new("TextButton")
+decreaseButton.Name = "DecreaseButton"
+decreaseButton.Parent = sanityGui
+decreaseButton.AnchorPoint = Vector2.new(0.5, 0.5)
+decreaseButton.Position = UDim2.new(0.5, -75, 0.9, 0)
+decreaseButton.Size = UDim2.new(0, 40, 0, 40)
+decreaseButton.Font = Enum.Font.SourceSansBold
+decreaseButton.TextSize = 18
+decreaseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+decreaseButton.BackgroundColor3 = Color3.fromRGB(0, 128, 255)
+decreaseButton.BackgroundTransparency = 0.7
+decreaseButton.TextStrokeTransparency = 0
+decreaseButton.Text = "-"
+
+-- Increase button functionality
+increaseButton.MouseButton1Click:Connect(function()
+    currentSpeed = currentSpeed + speedStep
+    setWalkSpeed(currentSpeed)
+    updateSpeedLabel()
+end)
+
+-- Decrease button functionality
+decreaseButton.MouseButton1Click:Connect(function()
+    currentSpeed = math.max(0, currentSpeed - speedStep) -- Ensure speed doesn't go below 0
+    setWalkSpeed(currentSpeed)
+    updateSpeedLabel()
+end)
+
+-- Ensure the speed is set continuously
+while true do
+    setWalkSpeed(currentSpeed)
+    wait(0.5)
+end
 
 local Cam = workspace.CurrentCamera
 local speaker = game.Players.LocalPlayer
@@ -646,39 +738,3 @@ if nHuman then
 else
     warn("Failed to clone Humanoid or Humanoid not found!")
 end
-
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-
--- Function to allow unlimited backpack items
-local function allowUnlimitedBackpack(player)
-    local backpack = player:FindFirstChild("Backpack")
-    if backpack then
-        -- Disable the backpack's limit check
-        local metatable = getrawmetatable(backpack)
-        local oldNamecall = metatable.__namecall
-        setreadonly(metatable, false)
-
-        metatable.__namecall = newcclosure(function(self, ...)
-            local method = getnamecallmethod()
-            if method == "GetChildren" then
-                local items = oldNamecall(self, ...)
-                -- Pretend there are fewer items if the limit is reached
-                if #items >= 100 then
-                    return {}
-                end
-                return items
-            end
-            return oldNamecall(self, ...)
-        end)
-        setreadonly(metatable, true)
-    end
-end
-
--- Apply the function to the local player
-allowUnlimitedBackpack(LocalPlayer)
-
--- Ensure the function is applied if the player respawns
-LocalPlayer.CharacterAdded:Connect(function()
-    allowUnlimitedBackpack(LocalPlayer)
-end)
