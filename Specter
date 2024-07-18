@@ -605,12 +605,20 @@ spawn(function() setAloneValue() end)
 spawn(function() setCameraMaxZoomDistance() end)
 spawn(function() setCameraMode() end)
 
+-- Services
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+-- Create GUI
+local sanityGui = Instance.new("ScreenGui")
+sanityGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+
 -- Create God Button
 local godButton = Instance.new("TextButton")
 godButton.Name = "GodButton"
 godButton.Parent = sanityGui
 godButton.AnchorPoint = Vector2.new(0, 0.5)
-godButton.Position = UDim2.new(1, -500, 0, 50)  -- Positioned below sanityLabel (adjust as needed)
+godButton.Position = UDim2.new(1, -439, 0, 104)  -- Positioned to the left of the startButton
 godButton.Size = UDim2.new(0, 140, 0, 30)
 godButton.Font = Enum.Font.SourceSansBold
 godButton.TextSize = 18
@@ -624,9 +632,11 @@ godButton.Text = "God Mode"
 godButton.MouseButton1Click:Connect(function()
     local Cam = workspace.CurrentCamera
     local speaker = Players.LocalPlayer
-    local Pos, Char = Cam.CFrame, speaker.Character
-    local Human = Char and Char:FindFirstChildWhichIsA("Humanoid")
-    local nHuman = Human and Human:Clone()
+    local Char = speaker.Character
+    if not Char then return end
+    local Human = Char:FindFirstChildWhichIsA("Humanoid")
+    if not Human then return end
+    local nHuman = Human:Clone()
 
     if nHuman then
         nHuman.Parent = Char
@@ -638,7 +648,7 @@ godButton.MouseButton1Click:Connect(function()
         Human:Destroy()
         speaker.Character = Char
         Cam.CameraSubject = nHuman
-        Cam.CFrame = wait() and Pos
+        Cam.CFrame = Cam.CFrame -- Ensure the camera is set correctly
         nHuman.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
 
         local Script = Char:FindFirstChild("Animate")
@@ -653,8 +663,6 @@ godButton.MouseButton1Click:Connect(function()
         warn("Failed to clone Humanoid or Humanoid not found!")
     end
 end)
-
-
 
 -- Services
 local Players = game:GetService("Players")
