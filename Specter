@@ -616,7 +616,7 @@ spawn(function() setAloneValue() end)
 spawn(function() setCameraMaxZoomDistance() end)
 spawn(function() setCameraMode() end)
 
-ocal Cam = workspace.CurrentCamera
+local Cam = workspace.CurrentCamera
 	local Pos, Char = Cam.CFrame, speaker.Character
 	local Human = Char and Char.FindFirstChildWhichIsA(Char, "Humanoid")
 	local nHuman = Human.Clone(Human)
