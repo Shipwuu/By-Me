@@ -676,7 +676,7 @@ local speedStep = 2 -- Increment/Decrement step for speed
 local function setWalkSpeed(speed)
     if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
         LocalPlayer.Character.Humanoid.WalkSpeed = speed
-        print("Set WalkSpeed to", speed)
+        
     end
 end
 
