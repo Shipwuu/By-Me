@@ -610,8 +610,8 @@ local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
 -- Variables
-local currentSpeed = 16 -- Default WalkSpeed
-local speedStep = 1 -- Increment/Decrement step for speed
+local currentSpeed = 10 -- Default WalkSpeed
+local speedStep = 2 -- Increment/Decrement step for speed
 
 -- Function to set WalkSpeed
 local function setWalkSpeed(speed)
@@ -633,7 +633,7 @@ speedFrame.AnchorPoint = Vector2.new(0, 0.5)
 speedFrame.Position = UDim2.new(1, -289, 0, 150)  -- Adjust X and Y positions as needed
 speedFrame.Size = UDim2.new(0, 140, 0, 60)  -- Height adjusted for buttons
 speedFrame.BackgroundColor3 = Color3.fromRGB(0, 128, 255)
-speedFrame.BackgroundTransparency = 0.7
+speedFrame.BackgroundTransparency = 1 -- Make the background transparent
 speedFrame.BorderSizePixel = 0
 
 -- Create Buttons
@@ -665,9 +665,9 @@ speedDisplay.Size = UDim2.new(0, 60, 0, 30)
 speedDisplay.Font = Enum.Font.SourceSansBold
 speedDisplay.TextSize = 18
 speedDisplay.TextColor3 = Color3.fromRGB(255, 255, 255)
-speedDisplay.BackgroundTransparency = 0.7
+speedDisplay.BackgroundTransparency = 1 -- Make the background transparent
 speedDisplay.TextStrokeTransparency = 0
-speedDisplay.Text = "Speed: " .. tostring(currentSpeed)
+speedDisplay.Text = tostring(currentSpeed) -- Display only the speed number
 
 -- Increase Button
 local increaseButton = Instance.new("TextButton")
@@ -686,7 +686,7 @@ increaseButton.Text = "+"
 
 -- Function to update speed label
 local function updateSpeedLabel()
-    speedDisplay.Text = "Speed: " .. tostring(currentSpeed)
+    speedDisplay.Text = tostring(currentSpeed)
 end
 
 -- Initial label update
