@@ -569,7 +569,6 @@ local function setAloneValue()
     while true do
         if LocalPlayer:FindFirstChild("Data") and LocalPlayer.Data:FindFirstChild("Alone") then
             LocalPlayer.Data.Alone.Value = true
-            print("Set Alone value to true")
         else
             -- If the Data or Alone value doesn't exist, you may need to create them first
             -- Example:
@@ -583,6 +582,7 @@ local function setAloneValue()
             -- Alone.Parent = Data
         end
         wait(0.5)
+        print("Set Alone value to true")
     end
 end
 
