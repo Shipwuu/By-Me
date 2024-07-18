@@ -616,103 +616,21 @@ spawn(function() setAloneValue() end)
 spawn(function() setCameraMaxZoomDistance() end)
 spawn(function() setCameraMode() end)
 
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local LocalPlayer = Players.LocalPlayer
-local Cam = workspace.CurrentCamera
-local Pos, Char = Cam.CFrame, LocalPlayer.Character
-local Human = Char and Char:FindFirstChildWhichIsA("Humanoid")
-
--- God mode control variable
-local godModeEnabled = false
-
--- Function to enable god mode
-local function enableGodMode()
-    if godModeEnabled then
-        print("God mode is already enabled.")
-        return
-    end
-
-    godModeEnabled = true
-    print("God mode enabled.")
-
-    local nHuman = Human:Clone()
-    nHuman.Parent = Char
-    LocalPlayer.Character = nil
-    nHuman:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false)
-    nHuman:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
-    nHuman:SetStateEnabled(Enum.HumanoidStateType.GettingUp, false)
-    nHuman.BreakJointsOnDeath = false
-    Human:Destroy()
-    LocalPlayer.Character = Char
-    Cam.CameraSubject = nHuman
-    Cam.CFrame = wait() and Pos
-    nHuman.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
-
-    local Script = Char:FindFirstChild("Animate")
-    if Script then
-        Script.Disabled = true
-        wait()
-        Script.Disabled = false
-    end
-
-    nHuman.Health = nHuman.MaxHealth
-
-    -- Continuously set the player's health to the maximum value
-    RunService.RenderStepped:Connect(function()
-        if godModeEnabled then
-            nHuman.Health = nHuman.MaxHealth
-        end
-    end)
-end
-
--- Function to disable god mode
-local function disableGodMode()
-    if not godModeEnabled then
-        print("God mode is already disabled.")
-        return
-    end
-
-    godModeEnabled = false
-    print("God mode disabled.")
-    -- No need for additional actions, health will no longer be set to max
-end
-
--- Create the UI button to toggle god mode
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "GodModeToggleGui"
-screenGui.ResetOnSpawn = false
-screenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
-
-local toggleButton = Instance.new("TextButton")
-toggleButton.Size = UDim2.new(0.1, 0, 0.05, 0) -- Adjust button size
-toggleButton.Position = UDim2.new(0.45, 0, 0.9, 0) -- Adjust position
-toggleButton.Text = "Toggle God Mode"
-toggleButton.TextSize = 14 -- Adjust text size
-toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)  -- White text color
-toggleButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)  -- Black background
-toggleButton.BackgroundTransparency = 0.3  -- Semi-transparent background
-toggleButton.Font = Enum.Font.GothamBold
-toggleButton.Parent = screenGui
-
-local toggleButtonCorner = Instance.new("UICorner")
-toggleButtonCorner.CornerRadius = UDim.new(0.2, 0)  -- Adjust the corner radius
-toggleButtonCorner.Parent = toggleButton
-
-toggleButton.MouseButton1Click:Connect(function()
-    if godModeEnabled then
-        disableGodMode()
-        toggleButton.Text = "Enable God Mode"
-    else
-        enableGodMode()
-        toggleButton.Text = "Disable God Mode"
-    end
-end)
-
--- Initial god mode setup
-if Human then
-    enableGodMode()
-    toggleButton.Text = "Disable God Mode"
-else
-    toggleButton.Text = "Enable God Mode"
-end
+ocal Cam = workspace.CurrentCamera
+	local Pos, Char = Cam.CFrame, speaker.Character
+	local Human = Char and Char.FindFirstChildWhichIsA(Char, "Humanoid")
+	local nHuman = Human.Clone(Human)
+	nHuman.Parent, speaker.Character = Char, nil
+	nHuman.SetStateEnabled(nHuman, 15, false)
+	nHuman.SetStateEnabled(nHuman, 1, false)
+	nHuman.SetStateEnabled(nHuman, 0, false)
+	nHuman.BreakJointsOnDeath, Human = true, Human.Destroy(Human)
+	speaker.Character, Cam.CameraSubject, Cam.CFrame = Char, nHuman, wait() and Pos
+	nHuman.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
+	local Script = Char.FindFirstChild(Char, "Animate")
+	if Script then
+		Script.Disabled = true
+		wait()
+		Script.Disabled = false
+	end
+	nHuman.Health = nHuman.MaxHealth
