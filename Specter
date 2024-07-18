@@ -465,6 +465,7 @@ end
 -- Create a ScreenGui to hold the button
 local gui = Instance.new("ScreenGui")
 gui.Parent = game.Players.LocalPlayer.PlayerGui -- Attach to player's GUI
+gui.ResetOnSpawn = false
 
 -- Create a TextButton for the script execution
 local button = Instance.new("TextButton")
