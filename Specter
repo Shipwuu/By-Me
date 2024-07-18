@@ -617,20 +617,32 @@ spawn(function() setCameraMaxZoomDistance() end)
 spawn(function() setCameraMode() end)
 
 local Cam = workspace.CurrentCamera
-	local Pos, Char = Cam.CFrame, speaker.Character
-	local Human = Char and Char.FindFirstChildWhichIsA(Char, "Humanoid")
-	local nHuman = Human.Clone(Human)
-	nHuman.Parent, speaker.Character = Char, nil
-	nHuman.SetStateEnabled(nHuman, 15, false)
-	nHuman.SetStateEnabled(nHuman, 1, false)
-	nHuman.SetStateEnabled(nHuman, 0, false)
-	nHuman.BreakJointsOnDeath, Human = true, Human.Destroy(Human)
-	speaker.Character, Cam.CameraSubject, Cam.CFrame = Char, nHuman, wait() and Pos
-	nHuman.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
-	local Script = Char.FindFirstChild(Char, "Animate")
-	if Script then
-		Script.Disabled = true
-		wait()
-		Script.Disabled = false
-	end
-	nHuman.Health = nHuman.MaxHealth
+local speaker = game.Players.LocalPlayer
+local Pos, Char = Cam.CFrame, speaker.Character
+local Human = Char and Char:FindFirstChildWhichIsA("Humanoid")
+local nHuman = Human and Human:Clone()
+
+if nHuman then
+    nHuman.Parent = Char
+    speaker.Character = nil
+    nHuman:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false)
+    nHuman:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
+    nHuman:SetStateEnabled(Enum.HumanoidStateType.GettingUp, false)
+    nHuman.BreakJointsOnDeath = false
+    Human:Destroy()
+    speaker.Character = Char
+    Cam.CameraSubject = nHuman
+    Cam.CFrame = wait() and Pos
+    nHuman.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
+
+    local Script = Char:FindFirstChild("Animate")
+    if Script then
+        Script.Disabled = true
+        wait()
+        Script.Disabled = false
+    end
+
+    nHuman.Health = nHuman.MaxHealth
+else
+    warn("Failed to clone Humanoid or Humanoid not found!")
+end
