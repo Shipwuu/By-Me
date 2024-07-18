@@ -6,114 +6,12 @@ local LocalPlayer = Players.LocalPlayer
 local sanityGui = Instance.new("ScreenGui")
 sanityGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
--- Create Start Button
-local startButton = Instance.new("TextButton")
-startButton.Name = "StartButton"
-startButton.Parent = sanityGui
-startButton.AnchorPoint = Vector2.new(0, 0.5)
-startButton.Position = UDim2.new(1, -289, 0, 104)  -- Adjust X and Y positions as needed
-startButton.Size = UDim2.new(0, 140, 0, 30)
-startButton.Font = Enum.Font.SourceSansBold
-startButton.TextSize = 18
-startButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-startButton.BackgroundColor3 = Color3.fromRGB(0, 128, 255)
-startButton.BackgroundTransparency = 0.7
-startButton.TextStrokeTransparency = 0
-startButton.Text = "Start"
-
--- Create Speed Frame
-local speedFrame = Instance.new("Frame")
-speedFrame.Name = "SpeedFrame"
-speedFrame.Parent = sanityGui
-speedFrame.AnchorPoint = Vector2.new(0, 0.5)
-speedFrame.Position = UDim2.new(1, -289, 0, 150)  -- Adjust X and Y positions as needed
-speedFrame.Size = UDim2.new(0, 140, 0, 60)  -- Height adjusted for buttons
-speedFrame.BackgroundColor3 = Color3.fromRGB(0, 128, 255)
-speedFrame.BackgroundTransparency = 1 -- Make the background transparent
-speedFrame.BorderSizePixel = 0
-
--- Create Speed Buttons
-local buttonSize = UDim2.new(0, 40, 0, 30)  -- Size of each button
-local buttonSpacing = 5  -- Space between buttons
-
--- Decrease Button
-local decreaseButton = Instance.new("TextButton")
-decreaseButton.Name = "DecreaseButton"
-decreaseButton.Parent = speedFrame
-decreaseButton.AnchorPoint = Vector2.new(0, 0.5)
-decreaseButton.Position = UDim2.new(0, 0, 0.5, 0)
-decreaseButton.Size = buttonSize
-decreaseButton.Font = Enum.Font.SourceSansBold
-decreaseButton.TextSize = 18
-decreaseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-decreaseButton.BackgroundColor3 = Color3.fromRGB(0, 128, 255)
-decreaseButton.BackgroundTransparency = 0.7
-decreaseButton.TextStrokeTransparency = 0
-decreaseButton.Text = "-"
-
--- Speed Display
-local speedDisplay = Instance.new("TextLabel")
-speedDisplay.Name = "SpeedDisplay"
-speedDisplay.Parent = speedFrame
-speedDisplay.AnchorPoint = Vector2.new(0.5, 0.5)
-speedDisplay.Position = UDim2.new(0.5, 0, 0.5, 0)
-speedDisplay.Size = UDim2.new(0, 60, 0, 30)
-speedDisplay.Font = Enum.Font.SourceSansBold
-speedDisplay.TextSize = 18
-speedDisplay.TextColor3 = Color3.fromRGB(255, 255, 255)
-speedDisplay.BackgroundTransparency = 1 -- Make the background transparent
-speedDisplay.TextStrokeTransparency = 0
-speedDisplay.Text = tostring(currentSpeed) -- Display only the speed number
-
--- Increase Button
-local increaseButton = Instance.new("TextButton")
-increaseButton.Name = "IncreaseButton"
-increaseButton.Parent = speedFrame
-increaseButton.AnchorPoint = Vector2.new(1, 0.5)
-increaseButton.Position = UDim2.new(1, 0, 0.5, 0)
-increaseButton.Size = buttonSize
-increaseButton.Font = Enum.Font.SourceSansBold
-increaseButton.TextSize = 18
-increaseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-increaseButton.BackgroundColor3 = Color3.fromRGB(0, 128, 255)
-increaseButton.BackgroundTransparency = 0.7
-increaseButton.TextStrokeTransparency = 0
-increaseButton.Text = "+"
-
--- Function to update speed label
-local function updateSpeedLabel()
-    speedDisplay.Text = tostring(currentSpeed)
-end
-
--- Initial label update
-updateSpeedLabel()
-
--- Increase Button Functionality
-increaseButton.MouseButton1Click:Connect(function()
-    currentSpeed = currentSpeed + speedStep
-    setWalkSpeed(currentSpeed)
-    updateSpeedLabel()
-end)
-
--- Decrease Button Functionality
-decreaseButton.MouseButton1Click:Connect(function()
-    currentSpeed = math.max(0, currentSpeed - speedStep)  -- Ensure speed doesn't go below 0
-    setWalkSpeed(currentSpeed)
-    updateSpeedLabel()
-end)
-
--- Ensure the speed is set continuously
-while true do
-    setWalkSpeed(currentSpeed)
-    wait(0.5)
-end
-
 -- Create God Button
 local godButton = Instance.new("TextButton")
 godButton.Name = "GodButton"
 godButton.Parent = sanityGui
 godButton.AnchorPoint = Vector2.new(0, 0.5)
-godButton.Position = UDim2.new(1, -289 - 140 - 10, 0, 104)  -- Positioned to the left of the startButton
+godButton.Position = UDim2.new(1, -439, 0, 104)  -- Positioned to the left of the startButton
 godButton.Size = UDim2.new(0, 140, 0, 30)
 godButton.Font = Enum.Font.SourceSansBold
 godButton.TextSize = 18
@@ -127,9 +25,11 @@ godButton.Text = "God Mode"
 godButton.MouseButton1Click:Connect(function()
     local Cam = workspace.CurrentCamera
     local speaker = Players.LocalPlayer
-    local Pos, Char = Cam.CFrame, speaker.Character
-    local Human = Char and Char:FindFirstChildWhichIsA("Humanoid")
-    local nHuman = Human and Human:Clone()
+    local Char = speaker.Character
+    if not Char then return end
+    local Human = Char:FindFirstChildWhichIsA("Humanoid")
+    if not Human then return end
+    local nHuman = Human:Clone()
 
     if nHuman then
         nHuman.Parent = Char
@@ -141,7 +41,7 @@ godButton.MouseButton1Click:Connect(function()
         Human:Destroy()
         speaker.Character = Char
         Cam.CameraSubject = nHuman
-        Cam.CFrame = wait() and Pos
+        Cam.CFrame = Cam.CFrame -- Ensure the camera is set correctly
         nHuman.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
 
         local Script = Char:FindFirstChild("Animate")
