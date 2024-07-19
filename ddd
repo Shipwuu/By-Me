@@ -1,4 +1,4 @@
--- LocalScript in StarterGui
+-- LocalScript in StarterPlayerScripts or StarterGui
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -7,36 +7,37 @@ local UserInputService = game:GetService("UserInputService")
 local velocityHandlerName = "VelocityHandler"
 local gyroHandlerName = "GyroHandler"
 
-local IsOnMobile = UserInputService.TouchEnabled
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local root = character:WaitForChild("HumanoidRootPart")
+
+local isFlying = false
 local flySpeed = 50
+local velocityHandler, gyroHandler
 
-local function getRoot(character)
-    return character:FindFirstChild("HumanoidRootPart")
-end
+local function startFlying()
+    if isFlying then return end
+    isFlying = true
 
-local function startFlying(character)
-    local root = getRoot(character)
-    if not root then return end
-    
     -- Create BodyVelocity and BodyGyro
-    local bv = Instance.new("BodyVelocity")
-    bv.Name = velocityHandlerName
-    bv.Parent = root
-    bv.MaxForce = Vector3.new(9e9, 9e9, 9e9)
-    bv.Velocity = Vector3.new(0, 0, 0)
+    velocityHandler = Instance.new("BodyVelocity")
+    velocityHandler.Name = velocityHandlerName
+    velocityHandler.Parent = root
+    velocityHandler.MaxForce = Vector3.new(9e9, 9e9, 9e9)
+    velocityHandler.Velocity = Vector3.new(0, 0, 0)
 
-    local bg = Instance.new("BodyGyro")
-    bg.Name = gyroHandlerName
-    bg.Parent = root
-    bg.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
-    bg.P = 1000
-    bg.D = 50
+    gyroHandler = Instance.new("BodyGyro")
+    gyroHandler.Name = gyroHandlerName
+    gyroHandler.Parent = root
+    gyroHandler.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
+    gyroHandler.P = 1000
+    gyroHandler.D = 50
 
     RunService.RenderStepped:Connect(function()
-        if not character or not root or not bv or not bg then return end
+        if not isFlying then return end
 
         -- Update BodyGyro to follow camera
-        bg.CFrame = workspace.CurrentCamera.CFrame
+        gyroHandler.CFrame = workspace.CurrentCamera.CFrame
 
         -- Get input and apply velocity
         local moveVector = Vector3.zero
@@ -52,29 +53,44 @@ local function startFlying(character)
         if UserInputService:IsKeyDown(Enum.KeyCode.D) then
             moveVector = moveVector + workspace.CurrentCamera.CFrame.RightVector
         end
-        if IsOnMobile then
-            -- Add mobile controls if needed
-        end
 
-        bv.Velocity = moveVector.Unit * flySpeed
+        velocityHandler.Velocity = moveVector.Unit * flySpeed
     end)
 end
 
-local function stopFlying(character)
-    local root = getRoot(character)
-    if not root then return end
-    
-    local bv = root:FindFirstChild(velocityHandlerName)
-    local bg = root:FindFirstChild(gyroHandlerName)
-    if bv then bv:Destroy() end
-    if bg then bg:Destroy() end
+local function stopFlying()
+    if not isFlying then return end
+    isFlying = false
+
+    if velocityHandler then
+        velocityHandler:Destroy()
+        velocityHandler = nil
+    end
+    if gyroHandler then
+        gyroHandler:Destroy()
+        gyroHandler = nil
+    end
 end
 
+-- Toggle flying on key press (for testing)
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+
+    if input.KeyCode == Enum.KeyCode.F then
+        if isFlying then
+            stopFlying()
+        else
+            startFlying()
+        end
+    end
+end)
+
+-- Toggle flying with the button
 local function createToggleButton()
     local screenGui = Instance.new("ScreenGui")
     screenGui.Name = "FlyToggleGui"
-    screenGui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
-    
+    screenGui.Parent = player:WaitForChild("PlayerGui")
+
     local toggleButton = Instance.new("TextButton")
     toggleButton.Size = UDim2.new(0, 100, 0, 50)
     toggleButton.Position = UDim2.new(0.5, -50, 0.5, -25) -- Center of the screen
@@ -83,26 +99,15 @@ local function createToggleButton()
     toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
     toggleButton.Parent = screenGui
 
-    return toggleButton
-end
-
-local function toggleFly()
-    local player = Players.LocalPlayer
-    if not player or not player.Character then return end
-    
-    local isFlying = false
-    local toggleButton = createToggleButton()
-    
     toggleButton.MouseButton1Click:Connect(function()
         if isFlying then
-            stopFlying(player.Character)
+            stopFlying()
             toggleButton.Text = "Fly"
         else
-            startFlying(player.Character)
+            startFlying()
             toggleButton.Text = "Unfly"
         end
-        isFlying = not isFlying
     end)
 end
 
-toggleFly()
+createToggleButton()
