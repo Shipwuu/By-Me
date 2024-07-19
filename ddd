@@ -1,7 +1,8 @@
+-- LocalScript in StarterGui
+
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
-local StarterGui = game:GetService("StarterGui")
 
 local velocityHandlerName = "VelocityHandler"
 local gyroHandlerName = "GyroHandler"
