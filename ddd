@@ -11,7 +11,6 @@ local flying = false
 local speed = 50
 local bodyGyro, bodyVelocity
 
--- Function to start flying
 local function startFlying()
     bodyGyro = Instance.new("BodyGyro")
     bodyGyro.P = 9e4
@@ -30,18 +29,18 @@ local function startFlying()
     -- Update loop for flying
     RunService.RenderStepped:Connect(function()
         if flying then
-            local moveDirection = Vector3.new()
             local thumbstick = UserInputService:GetThumbstick()
+            local moveDirection = Vector3.new()
 
             if thumbstick then
                 moveDirection = Vector3.new(thumbstick.Position.X, 0, thumbstick.Position.Y)
             end
 
-            -- Only apply horizontal movement, keep vertical speed to zero
+            -- Update body velocity based on input
             if moveDirection.Magnitude > 0 then
                 bodyVelocity.velocity = moveDirection.Unit * speed
             else
-                bodyVelocity.velocity = Vector3.new(0, bodyVelocity.velocity.Y, 0)
+                bodyVelocity.velocity = Vector3.new(0, bodyVelocity.velocity.Y, 0) -- Maintain Y velocity
             end
 
             -- Keep the character aligned with the camera
@@ -50,7 +49,6 @@ local function startFlying()
     end)
 end
 
--- Function to stop flying
 local function stopFlying()
     if bodyGyro then bodyGyro:Destroy() end
     if bodyVelocity then bodyVelocity:Destroy() end
@@ -59,7 +57,6 @@ local function stopFlying()
     flying = false
 end
 
--- Toggle flying state
 local function toggleFlying()
     if flying then
         stopFlying()
@@ -68,7 +65,6 @@ local function toggleFlying()
     end
 end
 
--- Create toggle button
 local function createToggleButton()
     local screenGui = Instance.new("ScreenGui", player.PlayerGui)
     local button = Instance.new("TextButton", screenGui)
