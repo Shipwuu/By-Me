@@ -8,7 +8,7 @@ local flyGui = Instance.new("ScreenGui")
 flyGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
 local FLYING = false
-local iyflyspeed = 1
+local iyflyspeed = 50
 local velocityHandlerName = "FlyVelocity"
 local gyroHandlerName = "FlyGyro"
 local mobileFlyConnection
@@ -30,61 +30,61 @@ toggleButton.Text = "Toggle Fly"
 
 -- Utility Functions
 local function getRoot(char)
-	return char:FindFirstChild("HumanoidRootPart") or char:FindFirstChildWhichIsA("BasePart")
+    return char:FindFirstChild("HumanoidRootPart") or char:FindFirstChildWhichIsA("BasePart")
 end
 
 local function startFlying()
-	FLYING = true
-	local character = LocalPlayer.Character
-	local root = getRoot(character)
+    FLYING = true
+    local character = LocalPlayer.Character
+    local root = getRoot(character)
 
-	-- Create BodyVelocity and BodyGyro
-	local bv = Instance.new("BodyVelocity")
-	bv.Name = velocityHandlerName
-	bv.Parent = root
-	bv.MaxForce = Vector3.new(9e9, 9e9, 9e9)
-	bv.Velocity = Vector3.new(0, 0, 0)
+    -- Create BodyVelocity and BodyGyro
+    local bv = Instance.new("BodyVelocity")
+    bv.Name = velocityHandlerName
+    bv.Parent = root
+    bv.MaxForce = Vector3.new(9e9, 9e9, 9e9)
+    bv.Velocity = Vector3.new(0, 0, 0)
 
-	local bg = Instance.new("BodyGyro")
-	bg.Name = gyroHandlerName
-	bg.Parent = root
-	bg.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
-	bg.P = 1000
-	bg.D = 50
+    local bg = Instance.new("BodyGyro")
+    bg.Name = gyroHandlerName
+    bg.Parent = root
+    bg.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
+    bg.P = 1000
+    bg.D = 50
 
-	-- Mobile Fly Control
-	mobileFlyConnection = RunService.RenderStepped:Connect(function()
-		local moveDirection = Vector3.new(UserInputService:GetDeviceAcceleration().x, UserInputService:GetDeviceAcceleration().y, UserInputService:GetDeviceAcceleration().z).Unit * iyflyspeed
-		bv.Velocity = moveDirection
-		bg.CFrame = workspace.CurrentCamera.CFrame
-	end)
+    -- Mobile Fly Control
+    mobileFlyConnection = RunService.RenderStepped:Connect(function()
+        local moveDirection = Vector3.new(UserInputService:GetDeviceAcceleration().x, UserInputService:GetDeviceAcceleration().y, UserInputService:GetDeviceAcceleration().z).Unit * iyflyspeed
+        bv.Velocity = moveDirection
+        bg.CFrame = workspace.CurrentCamera.CFrame
+    end)
 end
 
 local function stopFlying()
-	FLYING = false
-	local character = LocalPlayer.Character
-	local root = getRoot(character)
+    FLYING = false
+    local character = LocalPlayer.Character
+    local root = getRoot(character)
 
-	-- Destroy BodyVelocity and BodyGyro
-	if root:FindFirstChild(velocityHandlerName) then
-		root:FindFirstChild(velocityHandlerName):Destroy()
-	end
-	if root:FindFirstChild(gyroHandlerName) then
-		root:FindFirstChild(gyroHandlerName):Destroy()
-	end
+    -- Destroy BodyVelocity and BodyGyro
+    if root:FindFirstChild(velocityHandlerName) then
+        root:FindFirstChild(velocityHandlerName):Destroy()
+    end
+    if root:FindFirstChild(gyroHandlerName) then
+        root:FindFirstChild(gyroHandlerName):Destroy()
+    end
 
-	if mobileFlyConnection then
-		mobileFlyConnection:Disconnect()
-	end
+    if mobileFlyConnection then
+        mobileFlyConnection:Disconnect()
+    end
 end
 
 -- Toggle Fly Functionality
 toggleButton.MouseButton1Click:Connect(function()
-	if FLYING then
-		stopFlying()
-		toggleButton.Text = "Start Fly"
-	else
-		startFlying()
-		toggleButton.Text = "Stop Fly"
-	end
+    if FLYING then
+        stopFlying()
+        toggleButton.Text = "Start Fly"
+    else
+        startFlying()
+        toggleButton.Text = "Stop Fly"
+    end
 end)
