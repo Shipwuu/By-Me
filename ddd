@@ -1,171 +1,223 @@
--- Services
-local Players = game:GetService("Players")
-local UserInputService = game:GetService("UserInputService")
-local RunService = game:GetService("RunService")
+-- Press X to fly
 
-local LocalPlayer = Players.LocalPlayer
-local flyGui = Instance.new("ScreenGui")
-flyGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
-local FLYING = false
-local iyflyspeed = 50
-local velocityHandlerName = "FlyVelocity"
-local gyroHandlerName = "FlyGyro"
-local mobileFlyConnection
 
--- Create Toggle Button
-local toggleButton = Instance.new("TextButton")
-toggleButton.Name = "ToggleFlyButton"
-toggleButton.Parent = flyGui
-toggleButton.AnchorPoint = Vector2.new(0, 0.5)
-toggleButton.Position = UDim2.new(1, -200, 0, 200) -- Adjust position as needed
-toggleButton.Size = UDim2.new(0, 140, 0, 30)
-toggleButton.Font = Enum.Font.SourceSansBold
-toggleButton.TextSize = 18
-toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-toggleButton.BackgroundColor3 = Color3.fromRGB(0, 128, 255)
-toggleButton.BackgroundTransparency = 0.7
-toggleButton.TextStrokeTransparency = 0
-toggleButton.Text = "Toggle Fly"
+local plr = game.Players.LocalPlayer
 
--- Utility Functions
-local function getRoot(char)
-    return char:FindFirstChild("HumanoidRootPart") or char:FindFirstChildWhichIsA("BasePart")
-end
+	local mouse = plr:GetMouse()
 
-local function sFLY(vfly)
-    repeat wait() until Players.LocalPlayer and Players.LocalPlayer.Character and getRoot(Players.LocalPlayer.Character) and Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-    repeat wait() until IYMouse
-    if flyKeyDown or flyKeyUp then flyKeyDown:Disconnect() flyKeyUp:Disconnect() end
 
-    local T = getRoot(Players.LocalPlayer.Character)
-    local CONTROL = {F = 0, B = 0, L = 0, R = 0, Q = 0, E = 0}
-    local lCONTROL = {F = 0, B = 0, L = 0, R = 0, Q = 0, E = 0}
-    local SPEED = 0
 
-    local function FLY()
-        FLYING = true
-        local BG = Instance.new('BodyGyro')
-        local BV = Instance.new('BodyVelocity')
-        BG.P = 9e4
-        BG.Parent = T
-        BV.Parent = T
-        BG.maxTorque = Vector3.new(9e9, 9e9, 9e9)
-        BG.cframe = T.CFrame
-        BV.velocity = Vector3.new(0, 0, 0)
-        BV.maxForce = Vector3.new(9e9, 9e9, 9e9)
-        task.spawn(function()
-            repeat wait()
-                if not vfly and Players.LocalPlayer.Character:FindFirstChildOfClass('Humanoid') then
-                    Players.LocalPlayer.Character:FindFirstChildOfClass('Humanoid').PlatformStand = true
-                end
-                if CONTROL.L + CONTROL.R ~= 0 or CONTROL.F + CONTROL.B ~= 0 or CONTROL.Q + CONTROL.E ~= 0 then
-                    SPEED = 50
-                elseif not (CONTROL.L + CONTROL.R ~= 0 or CONTROL.F + CONTROL.B ~= 0 or CONTROL.Q + CONTROL.E ~= 0) and SPEED ~= 0 then
-                    SPEED = 0
-                end
-                if (CONTROL.L + CONTROL.R) ~= 0 or (CONTROL.F + CONTROL.B) ~= 0 or (CONTROL.Q + CONTROL.E) ~= 0 then
-                    BV.velocity = ((workspace.CurrentCamera.CoordinateFrame.lookVector * (CONTROL.F + CONTROL.B)) + ((workspace.CurrentCamera.CoordinateFrame * CFrame.new(CONTROL.L + CONTROL.R, (CONTROL.F + CONTROL.B + CONTROL.Q + CONTROL.E) * 0.2, 0).p) - workspace.CurrentCamera.CoordinateFrame.p)) * SPEED
-                    lCONTROL = {F = CONTROL.F, B = CONTROL.B, L = CONTROL.L, R = CONTROL.R}
-                elseif (CONTROL.L + CONTROL.R) == 0 and (CONTROL.F + CONTROL.B) == 0 and (CONTROL.Q + CONTROL.E) == 0 and SPEED ~= 0 then
-                    BV.velocity = ((workspace.CurrentCamera.CoordinateFrame.lookVector * (lCONTROL.F + lCONTROL.B)) + ((workspace.CurrentCamera.CoordinateFrame * CFrame.new(lCONTROL.L + lCONTROL.R, (lCONTROL.F + lCONTROL.B + CONTROL.Q + CONTROL.E) * 0.2, 0).p) - workspace.CurrentCamera.CoordinateFrame.p)) * SPEED
-                else
-                    BV.velocity = Vector3.new(0, 0, 0)
-                end
-                BG.cframe = workspace.CurrentCamera.CoordinateFrame
-            until not FLYING
-            CONTROL = {F = 0, B = 0, L = 0, R = 0, Q = 0, E = 0}
-            lCONTROL = {F = 0, B = 0, L = 0, R = 0, Q = 0, E = 0}
-            SPEED = 0
-            BG:Destroy()
-            BV:Destroy()
-            if Players.LocalPlayer.Character:FindFirstChildOfClass('Humanoid') then
-                Players.LocalPlayer.Character:FindFirstChildOfClass('Humanoid').PlatformStand = false
-            end
-        end)
-    end
-    flyKeyDown = IYMouse.KeyDown:Connect(function(KEY)
-        if KEY:lower() == 'w' then
-            CONTROL.F = (vfly and vehicleflyspeed or iyflyspeed)
-        elseif KEY:lower() == 's' then
-            CONTROL.B = - (vfly and vehicleflyspeed or iyflyspeed)
-        elseif KEY:lower() == 'a' then
-            CONTROL.L = - (vfly and vehicleflyspeed or iyflyspeed)
-        elseif KEY:lower() == 'd' then 
-            CONTROL.R = (vfly and vehicleflyspeed or iyflyspeed)
-        elseif QEfly and KEY:lower() == 'e' then
-            CONTROL.Q = (vfly and vehicleflyspeed or iyflyspeed)*2
-        elseif QEfly and KEY:lower() == 'q' then
-            CONTROL.E = -(vfly and vehicleflyspeed or iyflyspeed)*2
-        end
-        pcall(function() workspace.CurrentCamera.CameraType = Enum.CameraType.Track end)
-    end)
-    flyKeyUp = IYMouse.KeyUp:Connect(function(KEY)
-        if KEY:lower() == 'w' then
-            CONTROL.F = 0
-        elseif KEY:lower() == 's' then
-            CONTROL.B = 0
-        elseif KEY:lower() == 'a' then
-            CONTROL.L = 0
-        elseif KEY:lower() == 'd' then
-            CONTROL.R = 0
-        elseif KEY:lower() == 'e' then
-            CONTROL.Q = 0
-        elseif KEY:lower() == 'q' then
-            CONTROL.E = 0
-        end
-    end)
-    FLY()
-end
+	localplayer = plr
 
-local function NOFLY()
-    FLYING = false
-    if flyKeyDown or flyKeyUp then flyKeyDown:Disconnect() flyKeyUp:Disconnect() end
-    if Players.LocalPlayer.Character:FindFirstChildOfClass('Humanoid') then
-        Players.LocalPlayer.Character:FindFirstChildOfClass('Humanoid').PlatformStand = false
-    end
-    pcall(function() workspace.CurrentCamera.CameraType = Enum.CameraType.Custom end)
-end
 
-local function mobileFly()
-    local character = LocalPlayer.Character
-    local root = getRoot(character)
-    
-    if not root then return end
 
-    -- Create BodyVelocity and BodyGyro
-    local bv = Instance.new("BodyVelocity")
-    bv.Name = velocityHandlerName
-    bv.Parent = root
-    bv.MaxForce = Vector3.new(9e9, 9e9, 9e9)
-    bv.Velocity = Vector3.new(0, 0, 0)
+	if workspace:FindFirstChild("Core") then
 
-    local bg = Instance.new("BodyGyro")
-    bg.Name = gyroHandlerName
-    bg.Parent = root
-    bg.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
-    bg.P = 1000
-    bg.D = 50
+		workspace.Core:Destroy()
 
-    mobileFlyConnection = RunService.RenderStepped:Connect(function()
-        if not FLYING then return end
-        local moveDirection = Vector3.new(UserInputService:GetDeviceAcceleration().x, UserInputService:GetDeviceAcceleration().y, UserInputService:GetDeviceAcceleration().z).Unit * iyflyspeed
-        bv.Velocity = moveDirection
-        bg.CFrame = workspace.CurrentCamera.CFrame
-    end)
-end
+	end
 
--- Toggle Fly Functionality
-toggleButton.MouseButton1Click:Connect(function()
-    if FLYING then
-        NOFLY()
-        toggleButton.Text = "Start Fly"
-    else
-        if UserInputService.TouchEnabled then
-            mobileFly()
-        else
-            sFLY(false)
-        end
-        toggleButton.Text = "Stop Fly"
-    end
+
+
+	local Core = Instance.new("Part")
+
+	Core.Name = "Core"
+
+	Core.Size = Vector3.new(0.05, 0.05, 0.05)
+
+
+
+	spawn(function()
+
+		Core.Parent = workspace
+
+		local Weld = Instance.new("Weld", Core)
+
+		Weld.Part0 = Core
+
+		Weld.Part1 = localplayer.Character.LowerTorso
+
+		Weld.C0 = CFrame.new(0, 0, 0)
+
+	end)
+
+
+
+	workspace:WaitForChild("Core")
+
+
+
+	local torso = workspace.Core
+
+	flying = true
+
+	local speed=10
+
+	local keys={a=false,d=false,w=false,s=false}
+
+	local e1
+
+	local e2
+
+	local function start()
+
+		local pos = Instance.new("BodyPosition",torso)
+
+		local gyro = Instance.new("BodyGyro",torso)
+
+		pos.Name="EPIXPOS"
+
+		pos.maxForce = Vector3.new(math.huge, math.huge, math.huge)
+
+		pos.position = torso.Position
+
+		gyro.maxTorque = Vector3.new(9e9, 9e9, 9e9)
+
+		gyro.cframe = torso.CFrame
+
+		repeat
+
+			wait()
+
+			localplayer.Character.Humanoid.PlatformStand=true
+
+			local new=gyro.cframe - gyro.cframe.p + pos.position
+
+			if not keys.w and not keys.s and not keys.a and not keys.d then
+
+				speed=5
+
+			end
+
+			if keys.w then
+
+				new = new + workspace.CurrentCamera.CoordinateFrame.lookVector * speed
+
+				speed=speed+0
+
+			end
+
+			if keys.s then
+
+				new = new - workspace.CurrentCamera.CoordinateFrame.lookVector * speed
+
+				speed=speed+0
+
+			end
+
+			if keys.d then
+
+				new = new * CFrame.new(speed,0,0)
+
+				speed=speed+0
+
+			end
+
+			if keys.a then
+
+				new = new * CFrame.new(-speed,0,0)
+
+				speed=speed+0
+
+			end
+
+			if speed>10 then
+
+				speed=5
+
+			end
+
+			pos.position=new.p
+
+			if keys.w then
+
+				gyro.cframe = workspace.CurrentCamera.CoordinateFrame*CFrame.Angles(-math.rad(speed*0),0,0)
+
+			elseif keys.s then
+
+				gyro.cframe = workspace.CurrentCamera.CoordinateFrame*CFrame.Angles(math.rad(speed*0),0,0)
+
+			else
+
+				gyro.cframe = workspace.CurrentCamera.CoordinateFrame
+
+			end
+
+		until flying == false
+
+		if gyro then gyro:Destroy() end
+
+		if pos then pos:Destroy() end
+
+		flying=false
+
+		localplayer.Character.Humanoid.PlatformStand=false
+
+		speed=10
+
+	end
+
+	e1=mouse.KeyDown:connect(function(key)
+
+		if not torso or not torso.Parent then flying=false e1:disconnect() e2:disconnect() return end
+
+		if key=="w" then
+
+			keys.w=true
+
+		elseif key=="s" then
+
+			keys.s=true
+
+		elseif key=="a" then
+
+			keys.a=true
+
+		elseif key=="d" then
+
+			keys.d=true
+
+		elseif key=="x" then
+
+			if flying==true then
+
+				flying=false
+
+			else
+
+				flying=true
+
+				start()
+
+			end
+
+		end
+
+	end)
+
+	e2=mouse.KeyUp:connect(function(key)
+
+		if key=="w" then
+
+			keys.w=false
+
+		elseif key=="s" then
+
+			keys.s=false
+
+		elseif key=="a" then
+
+			keys.a=false
+
+		elseif key=="d" then
+
+			keys.d=false
+
+		end
+
+	end)
+
+	start()
+
 end)
