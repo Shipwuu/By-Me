@@ -8,6 +8,9 @@ local gyroHandlerName = "GyroHandler"
 local vehicleflyspeed = 1
 local iyflyspeed = 1
 local FLYING = false
+local speed = 0
+local maxspeed = 50
+local lastDirection = Vector3.new(0, 0, 0)
 
 -- Utility function to get the root part of a character
 local function getRoot(character)
@@ -20,7 +23,6 @@ local function startFlying()
 	local player = Players.LocalPlayer
 	local root = getRoot(player.Character)
 	local camera = workspace.CurrentCamera
-	local v3none = Vector3.new()
 	local v3inf = Vector3.new(9e9, 9e9, 9e9)
 
 	-- Create BodyVelocity and BodyGyro instances
@@ -28,7 +30,7 @@ local function startFlying()
 	bv.Name = velocityHandlerName
 	bv.Parent = root
 	bv.MaxForce = v3inf
-	bv.Velocity = v3none
+	bv.Velocity = Vector3.new()
 
 	local bg = Instance.new("BodyGyro")
 	bg.Name = gyroHandlerName
@@ -36,22 +38,25 @@ local function startFlying()
 	bg.MaxTorque = v3inf
 	bg.P = 1000
 	bg.D = 50
+	bg.CFrame = camera.CFrame
 
 	-- Flight logic
 	local controlModule = require(player.PlayerScripts:WaitForChild("PlayerModule"):WaitForChild("ControlModule"))
-	local lastDirection = Vector3.new(0, 0, 0)
 
 	local function updateFlight()
 		while FLYING do
 			if player.Character and player.Character:FindFirstChildOfClass("Humanoid") then
 				local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
-				local direction = controlModule:GetMoveVector() * (vehicleflyspeed or iyflyspeed) * 50
+				local direction = controlModule:GetMoveVector()
+				local moveDirection = direction * (vehicleflyspeed or iyflyspeed) * 50
 
-				if direction.Magnitude > 0 then
-					bv.Velocity = direction
-					lastDirection = direction
+				if moveDirection.Magnitude > 0 then
+					speed = math.min(speed + 0.5 + (speed / maxspeed), maxspeed)
+					bv.Velocity = moveDirection
+					lastDirection = moveDirection
 				else
-					bv.Velocity = lastDirection
+					speed = math.max(speed - 1, 0)
+					bv.Velocity = lastDirection * speed
 				end
 
 				bg.CFrame = camera.CFrame
