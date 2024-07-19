@@ -1,97 +1,106 @@
 local Players = game:GetService("Players")
-local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local StarterGui = game:GetService("StarterGui")
 
-local player = Players.LocalPlayer
-local character = player.Character or player.CharacterAdded:Wait()
-local humanoid = character:WaitForChild("Humanoid")
-local rootPart = character:WaitForChild("HumanoidRootPart")
+local velocityHandlerName = "VelocityHandler"
+local gyroHandlerName = "GyroHandler"
 
-local flying = false
-local speed = 50
-local bodyGyro, bodyVelocity
+local IsOnMobile = UserInputService.TouchEnabled
+local flySpeed = 50
 
-local moveDirection = Vector3.new()
-
--- Track joystick input
-local function onInputChanged(input)
-    if input.UserInputType == Enum.UserInputType.Touch then
-        local thumbstick = UserInputService:GetTouchPositions()
-        if #thumbstick > 0 then
-            local thumbstickPosition = thumbstick[1] -- Only the first touch for simplicity
-            local screenSize = UserInputService:GetScreenSize()
-            local normalizedPosition = Vector2.new(thumbstickPosition.X / screenSize.X, thumbstickPosition.Y / screenSize.Y)
-
-            moveDirection = Vector3.new((normalizedPosition.X - 0.5) * 2, 0, (normalizedPosition.Y - 0.5) * 2)
-        end
-    end
+local function getRoot(character)
+    return character:FindFirstChild("HumanoidRootPart")
 end
 
-local function startFlying()
-    if flying then return end
-    flying = true
+local function startFlying(character)
+    local root = getRoot(character)
+    if not root then return end
     
-    -- Create and configure BodyGyro and BodyVelocity
-    bodyGyro = Instance.new("BodyGyro", rootPart)
-    bodyGyro.P = 9e4
-    bodyGyro.maxTorque = Vector3.new(9e9, 9e9, 9e9)
-    bodyGyro.CFrame = rootPart.CFrame
+    -- Create BodyVelocity and BodyGyro
+    local bv = Instance.new("BodyVelocity")
+    bv.Name = velocityHandlerName
+    bv.Parent = root
+    bv.MaxForce = Vector3.new(9e9, 9e9, 9e9)
+    bv.Velocity = Vector3.new(0, 0, 0)
 
-    bodyVelocity = Instance.new("BodyVelocity", rootPart)
-    bodyVelocity.velocity = Vector3.new(0, 0, 0)
-    bodyVelocity.maxForce = Vector3.new(9e9, 9e9, 9e9)
+    local bg = Instance.new("BodyGyro")
+    bg.Name = gyroHandlerName
+    bg.Parent = root
+    bg.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
+    bg.P = 1000
+    bg.D = 50
 
-    humanoid.PlatformStand = true
-
-    -- Update loop for flying
     RunService.RenderStepped:Connect(function()
-        if not flying then return end
-        
-        -- Update body velocity based on input
-        if moveDirection.Magnitude > 0 then
-            bodyVelocity.velocity = moveDirection.Unit * speed
-        else
-            bodyVelocity.velocity = Vector3.new(0, bodyVelocity.velocity.Y, 0) -- Prevent Y-axis movement
+        if not character or not root or not bv or not bg then return end
+
+        -- Update BodyGyro to follow camera
+        bg.CFrame = workspace.CurrentCamera.CFrame
+
+        -- Get input and apply velocity
+        local moveVector = Vector3.zero
+        if UserInputService:IsKeyDown(Enum.KeyCode.W) then
+            moveVector = moveVector + workspace.CurrentCamera.CFrame.LookVector
+        end
+        if UserInputService:IsKeyDown(Enum.KeyCode.S) then
+            moveVector = moveVector - workspace.CurrentCamera.CFrame.LookVector
+        end
+        if UserInputService:IsKeyDown(Enum.KeyCode.A) then
+            moveVector = moveVector - workspace.CurrentCamera.CFrame.RightVector
+        end
+        if UserInputService:IsKeyDown(Enum.KeyCode.D) then
+            moveVector = moveVector + workspace.CurrentCamera.CFrame.RightVector
+        end
+        if IsOnMobile then
+            -- Add mobile controls if needed
         end
 
-        -- Keep the character aligned with the camera
-        bodyGyro.CFrame = workspace.CurrentCamera.CFrame
+        bv.Velocity = moveVector.Unit * flySpeed
     end)
 end
 
-local function stopFlying()
-    if not flying then return end
-    flying = false
-
-    if bodyGyro then bodyGyro:Destroy() end
-    if bodyVelocity then bodyVelocity:Destroy() end
-
-    humanoid.PlatformStand = false
+local function stopFlying(character)
+    local root = getRoot(character)
+    if not root then return end
+    
+    local bv = root:FindFirstChild(velocityHandlerName)
+    local bg = root:FindFirstChild(gyroHandlerName)
+    if bv then bv:Destroy() end
+    if bg then bg:Destroy() end
 end
-
-local function toggleFlying()
-    if flying then
-        stopFlying()
-    else
-        startFlying()
-    end
-end
-
--- Bind input changes to handle joystick movement
-UserInputService.InputChanged:Connect(onInputChanged)
 
 local function createToggleButton()
-    local screenGui = Instance.new("ScreenGui", player.PlayerGui)
-    local button = Instance.new("TextButton", screenGui)
-    button.Size = UDim2.new(0, 200, 0, 50)
-    button.Position = UDim2.new(0.5, -100, 0.9, -25)
-    button.Text = "Toggle Fly"
-    button.BackgroundColor3 = Color3.fromRGB(0, 0, 255)
-    button.TextColor3 = Color3.fromRGB(255, 255, 255)
-    button.TextScaled = true
-    button.BorderSizePixel = 0
+    local screenGui = Instance.new("ScreenGui")
+    screenGui.Parent = StarterGui
+    
+    local toggleButton = Instance.new("TextButton")
+    toggleButton.Size = UDim2.new(0, 100, 0, 50)
+    toggleButton.Position = UDim2.new(0.5, -50, 0.9, -25)
+    toggleButton.Text = "Fly"
+    toggleButton.BackgroundColor3 = Color3.fromRGB(0, 0, 255)
+    toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    toggleButton.Parent = screenGui
 
-    button.MouseButton1Click:Connect(toggleFlying)
+    return toggleButton
 end
 
-createToggleButton()
+local function toggleFly()
+    local player = Players.LocalPlayer
+    if not player or not player.Character then return end
+    
+    local isFlying = false
+    local toggleButton = createToggleButton()
+    
+    toggleButton.MouseButton1Click:Connect(function()
+        if isFlying then
+            stopFlying(player.Character)
+            toggleButton.Text = "Fly"
+        else
+            startFlying(player.Character)
+            toggleButton.Text = "Unfly"
+        end
+        isFlying = not isFlying
+    end)
+end
+
+toggleFly()
