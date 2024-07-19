@@ -1,101 +1,131 @@
-----------------------------------------------------
----  A redistribution of https://wearedevs.net/  ---
-----------------------------------------------------
+-- LocalScript in StarterPlayerScripts or StarterGui
 
---Waits until the player is in game
-repeat wait()
-until game.Players.LocalPlayer and game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:findFirstChild("Torso") and game.Players.LocalPlayer.Character:findFirstChild("Humanoid")
-local mouse = game.Players.LocalPlayer:GetMouse()
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
 
---Waits until the player's mouse is found
-repeat wait() until mouse
+-- Wait until the player is in the game
+repeat wait() until Players.LocalPlayer and Players.LocalPlayer.Character and Players.LocalPlayer.Character:FindFirstChild("Humanoid") and Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
 
---Variables
-local plr = game.Players.LocalPlayer
-local torso = plr.Character.Torso
-local flying = true
-local deb = true
+local player = Players.LocalPlayer
+local character = player.Character
+local humanoid = character:WaitForChild("Humanoid")
+local rootPart = character:WaitForChild("HumanoidRootPart")
+local mouse = player:GetMouse()
+
+-- Variables
+local flying = false
+local speed = 50
+local bodyGyro, bodyVelocity
 local ctrl = {f = 0, b = 0, l = 0, r = 0}
-local lastctrl = {f = 0, b = 0, l = 0, r = 0}
-local maxspeed = 50
-local speed = 0
-local bg = nil
-local bv = nil
+local lastCtrl = {f = 0, b = 0, l = 0, r = 0}
 
---Actual flying
-function Fly()
-	game.StarterGui:SetCore("SendNotification", {Title="Fly Activated"; Text="WeAreDevs.net"; Duration=1;})
-    bg = Instance.new("BodyGyro", torso)
-    bg.P = 9e4
-    bg.maxTorque = Vector3.new(9e9, 9e9, 9e9)
-    bg.cframe = torso.CFrame
-    bv = Instance.new("BodyVelocity", torso)
-    bv.velocity = Vector3.new(0,0.1,0)
-    bv.maxForce = Vector3.new(9e9, 9e9, 9e9)
-    repeat wait()
-      plr.Character.Humanoid.PlatformStand = true
-      if ctrl.l + ctrl.r ~= 0 or ctrl.f + ctrl.b ~= 0 then
-        speed = speed+.5+(speed/maxspeed)
-        if speed > maxspeed then
-          speed = maxspeed
+-- Function to start flying
+local function startFlying()
+    if flying then return end
+    
+    bodyGyro = Instance.new("BodyGyro")
+    bodyGyro.P = 9e4
+    bodyGyro.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
+    bodyGyro.CFrame = rootPart.CFrame
+    bodyGyro.Parent = rootPart
+
+    bodyVelocity = Instance.new("BodyVelocity")
+    bodyVelocity.Velocity = Vector3.new(0, 0, 0)
+    bodyVelocity.MaxForce = Vector3.new(9e9, 9e9, 9e9)
+    bodyVelocity.Parent = rootPart
+
+    flying = true
+    humanoid.PlatformStand = true
+
+    -- Update loop for flying
+    RunService.RenderStepped:Connect(function()
+        if flying then
+            local moveDirection = Vector3.new()
+            local lookVector = workspace.CurrentCamera.CFrame.LookVector
+            local rightVector = workspace.CurrentCamera.CFrame.RightVector
+
+            if ctrl.f ~= 0 or ctrl.b ~= 0 then
+                speed = math.min(speed + 0.5 + (speed / 50), 50)
+            elseif speed ~= 0 then
+                speed = math.max(speed - 1, 0)
+            end
+
+            if ctrl.f ~= 0 or ctrl.b ~= 0 then
+                bodyVelocity.Velocity = ((lookVector * (ctrl.f + ctrl.b)) + ((workspace.CurrentCamera.CFrame * CFrame.new(ctrl.l + ctrl.r, (ctrl.f + ctrl.b) * 0.2, 0).p) - workspace.CurrentCamera.CFrame.p)) * speed
+                lastCtrl = {f = ctrl.f, b = ctrl.b, l = ctrl.l, r = ctrl.r}
+            elseif ctrl.l == 0 and ctrl.r == 0 and ctrl.f == 0 and ctrl.b == 0 and speed ~= 0 then
+                bodyVelocity.Velocity = ((lookVector * (lastCtrl.f + lastCtrl.b)) + ((workspace.CurrentCamera.CFrame * CFrame.new(lastCtrl.l + lastCtrl.r, (lastCtrl.f + lastCtrl.b) * 0.2, 0).p) - workspace.CurrentCamera.CFrame.p)) * speed
+            else
+                bodyVelocity.Velocity = Vector3.new(0, 0, 0)
+            end
+
+            bodyGyro.CFrame = workspace.CurrentCamera.CFrame * CFrame.Angles(-math.rad((ctrl.f + ctrl.b) * 50 * speed / 50), 0, 0)
         end
-      elseif not (ctrl.l + ctrl.r ~= 0 or ctrl.f + ctrl.b ~= 0) and speed ~= 0 then
-        speed = speed-1
-        if speed < 0 then
-          speed = 0
-        end
-      end
-      if (ctrl.l + ctrl.r) ~= 0 or (ctrl.f + ctrl.b) ~= 0 then
-        bv.velocity = ((game.Workspace.CurrentCamera.CoordinateFrame.lookVector * (ctrl.f+ctrl.b)) + ((game.Workspace.CurrentCamera.CoordinateFrame * CFrame.new(ctrl.l+ctrl.r,(ctrl.f+ctrl.b)*.2,0).p) - game.Workspace.CurrentCamera.CoordinateFrame.p))*speed
-        lastctrl = {f = ctrl.f, b = ctrl.b, l = ctrl.l, r = ctrl.r}
-      elseif (ctrl.l + ctrl.r) == 0 and (ctrl.f + ctrl.b) == 0 and speed ~= 0 then
-        bv.velocity = ((game.Workspace.CurrentCamera.CoordinateFrame.lookVector * (lastctrl.f+lastctrl.b)) + ((game.Workspace.CurrentCamera.CoordinateFrame * CFrame.new(lastctrl.l+lastctrl.r,(lastctrl.f+lastctrl.b)*.2,0).p) - game.Workspace.CurrentCamera.CoordinateFrame.p))*speed
-      else
-        bv.velocity = Vector3.new(0,0.1,0)
-      end
-      bg.cframe = game.Workspace.CurrentCamera.CoordinateFrame * CFrame.Angles(-math.rad((ctrl.f+ctrl.b)*50*speed/maxspeed),0,0)
-    until not flying
-    ctrl = {f = 0, b = 0, l = 0, r = 0}
-    lastctrl = {f = 0, b = 0, l = 0, r = 0}
-    speed = 0
-    bg:Destroy()
-	bg = nil
-    bv:Destroy()
-	bv = nil
-    plr.Character.Humanoid.PlatformStand = false
-	game.StarterGui:SetCore("SendNotification", {Title="Fly Deactivated"; Text="WeAreDevs.net"; Duration=1;})
+    end)
 end
 
---Controls
-mouse.KeyDown:connect(function(key)
-	if key:lower() == "e" then
-		if flying then 
-			flying = false
-		else
-			flying = true
-			Fly()
-		end
-	elseif key:lower() == "w" then
-		ctrl.f = 1
-	elseif key:lower() == "s" then
-		ctrl.b = -1
-	elseif key:lower() == "a" then
-		ctrl.l = -1
-	elseif key:lower() == "d" then
-		ctrl.r = 1
-	end
-end)
+-- Function to stop flying
+local function stopFlying()
+    if bodyGyro then bodyGyro:Destroy() end
+    if bodyVelocity then bodyVelocity:Destroy() end
 
-mouse.KeyUp:connect(function(key)
-	if key:lower() == "w" then
-		ctrl.f = 0
-	elseif key:lower() == "s" then
-		ctrl.b = 0
-	elseif key:lower() == "a" then
-		ctrl.l = 0
-	elseif key:lower() == "d" then
-		ctrl.r = 0
-	end
-end)
+    humanoid.PlatformStand = false
+    flying = false
+end
 
-Fly(
+-- Toggle flying on and off
+local function toggleFlying()
+    if flying then
+        stopFlying()
+    else
+        startFlying()
+    end
+end
+
+-- Create the UI button to toggle flying
+local function createToggleButton()
+    local screenGui = Instance.new("ScreenGui", player.PlayerGui)
+    local button = Instance.new("TextButton", screenGui)
+    button.Size = UDim2.new(0, 200, 0, 50)
+    button.Position = UDim2.new(0.5, -100, 0.9, -25)
+    button.Text = "Toggle Fly"
+    button.BackgroundColor3 = Color3.fromRGB(0, 0, 255)
+    button.TextColor3 = Color3.fromRGB(255, 255, 255)
+    button.TextScaled = true
+    button.BorderSizePixel = 0
+
+    button.MouseButton1Click:Connect(toggleFlying)
+end
+
+-- Handle keyboard input for flying controls
+local function setupControls()
+    mouse.KeyDown:Connect(function(key)
+        if key:lower() == "e" then
+            toggleFlying()
+        elseif key:lower() == "w" then
+            ctrl.f = 1
+        elseif key:lower() == "s" then
+            ctrl.b = -1
+        elseif key:lower() == "a" then
+            ctrl.l = -1
+        elseif key:lower() == "d" then
+            ctrl.r = 1
+        end
+    end)
+
+    mouse.KeyUp:Connect(function(key)
+        if key:lower() == "w" then
+            ctrl.f = 0
+        elseif key:lower() == "s" then
+            ctrl.b = 0
+        elseif key:lower() == "a" then
+            ctrl.l = 0
+        elseif key:lower() == "d" then
+            ctrl.r = 0
+        end
+    end)
+end
+
+createToggleButton()
+setupControls()
