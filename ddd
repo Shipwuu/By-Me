@@ -1,41 +1,29 @@
+-- Roblox Services
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 
-local velocityHandlerName = randomString()
-local gyroHandlerName = randomString()
+-- Variables
+local velocityHandlerName = "VelocityHandler"
+local gyroHandlerName = "GyroHandler"
 local vehicleflyspeed = 1
 local iyflyspeed = 1
 local FLYING = false
 
--- Define a function to handle flying
-local function unmobilefly(speaker)
-	pcall(function()
-		FLYING = false
-		local root = getRoot(speaker.Character)
-		if root then
-			local velocityHandler = root:FindFirstChild(velocityHandlerName)
-			local gyroHandler = root:FindFirstChild(gyroHandlerName)
-			if velocityHandler then velocityHandler:Destroy() end
-			if gyroHandler then gyroHandler:Destroy() end
-			if speaker.Character:FindFirstChildOfClass("Humanoid") then
-				speaker.Character:FindFirstChildOfClass("Humanoid").PlatformStand = false
-			end
-		end
-	end)
+-- Utility function to get the root part of a character
+local function getRoot(character)
+	return character:FindFirstChild("HumanoidRootPart") or character:FindFirstChild("Torso") or character:FindFirstChild("UpperTorso")
 end
 
-local function mobilefly(speaker, vfly)
-	unmobilefly(speaker)
+-- Function to start flying
+local function startFlying()
 	FLYING = true
-
-	local root = getRoot(speaker.Character)
+	local player = Players.LocalPlayer
+	local root = getRoot(player.Character)
 	local camera = workspace.CurrentCamera
 	local v3none = Vector3.new()
-	local v3zero = Vector3.new(0, 0, 0)
 	local v3inf = Vector3.new(9e9, 9e9, 9e9)
 
-	local controlModule = require(speaker.PlayerScripts:WaitForChild("PlayerModule"):WaitForChild("ControlModule"))
-
+	-- Create BodyVelocity and BodyGyro instances
 	local bv = Instance.new("BodyVelocity")
 	bv.Name = velocityHandlerName
 	bv.Parent = root
@@ -49,35 +37,29 @@ local function mobilefly(speaker, vfly)
 	bg.P = 1000
 	bg.D = 50
 
+	-- Flight logic
+	local controlModule = require(player.PlayerScripts:WaitForChild("PlayerModule"):WaitForChild("ControlModule"))
 	local function updateFlight()
 		while FLYING do
-			if speaker.Character and speaker.Character:FindFirstChildOfClass("Humanoid") then
-				local humanoid = speaker.Character:FindFirstChildOfClass("Humanoid")
-				local VelocityHandler = root:FindFirstChild(velocityHandlerName)
-				local GyroHandler = root:FindFirstChild(gyroHandlerName)
-				if VelocityHandler and GyroHandler then
-					local direction = controlModule:GetMoveVector()
-					local speed = vfly and vehicleflyspeed or iyflyspeed
-					
-					VelocityHandler.MaxForce = v3inf
-					GyroHandler.MaxTorque = v3inf
-					if not vfly then humanoid.PlatformStand = true end
-					
-					GyroHandler.CFrame = camera.CFrame
-					VelocityHandler.Velocity = v3none
+			if player.Character and player.Character:FindFirstChildOfClass("Humanoid") then
+				local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
+				local direction = controlModule:GetMoveVector()
+				local speed = vehicleflyspeed
 
-					if direction.X > 0 then
-						VelocityHandler.Velocity = VelocityHandler.Velocity + camera.CFrame.RightVector * (direction.X * (speed * 50))
-					elseif direction.X < 0 then
-						VelocityHandler.Velocity = VelocityHandler.Velocity + camera.CFrame.RightVector * (direction.X * (speed * 50))
-					end
-					
-					if direction.Z > 0 then
-						VelocityHandler.Velocity = VelocityHandler.Velocity - camera.CFrame.LookVector * (direction.Z * (speed * 50))
-					elseif direction.Z < 0 then
-						VelocityHandler.Velocity = VelocityHandler.Velocity - camera.CFrame.LookVector * (direction.Z * (speed * 50))
-					end
+				if direction.X > 0 then
+					bv.Velocity = bv.Velocity + camera.CFrame.RightVector * (direction.X * (speed * 50))
+				elseif direction.X < 0 then
+					bv.Velocity = bv.Velocity + camera.CFrame.RightVector * (direction.X * (speed * 50))
 				end
+
+				if direction.Z > 0 then
+					bv.Velocity = bv.Velocity - camera.CFrame.LookVector * (direction.Z * (speed * 50))
+				elseif direction.Z < 0 then
+					bv.Velocity = bv.Velocity - camera.CFrame.LookVector * (direction.Z * (speed * 50))
+				end
+
+				bg.CFrame = camera.CFrame
+				humanoid.PlatformStand = true
 			end
 			wait()
 		end
@@ -89,8 +71,8 @@ local function mobilefly(speaker, vfly)
 			if root:FindFirstChild(gyroHandlerName) then
 				root:FindFirstChild(gyroHandlerName):Destroy()
 			end
-			if speaker.Character:FindFirstChildOfClass("Humanoid") then
-				speaker.Character:FindFirstChildOfClass("Humanoid").PlatformStand = false
+			if player.Character:FindFirstChildOfClass("Humanoid") then
+				player.Character:FindFirstChildOfClass("Humanoid").PlatformStand = false
 			end
 		end
 	end
@@ -99,7 +81,12 @@ local function mobilefly(speaker, vfly)
 	coroutine.wrap(updateFlight)()
 end
 
--- Toggle flying using a button in the GUI
+-- Function to stop flying
+local function stopFlying()
+	FLYING = false
+end
+
+-- Function to set up the fly button in the GUI
 local function setupFlyButton()
 	local player = Players.LocalPlayer
 	local screenGui = Instance.new("ScreenGui")
@@ -116,15 +103,15 @@ local function setupFlyButton()
 
 	flyButton.MouseButton1Click:Connect(function()
 		if not isFlying then
-			mobilefly(player, true)
+			startFlying()
 			flyButton.Text = "Stop Flying"
 		else
-			NOFLY()
+			stopFlying()
 			flyButton.Text = "Fly"
 		end
 		isFlying = not isFlying
 	end)
 end
 
--- Call the setup function when the script runs
+-- Execute setup function
 setupFlyButton()
