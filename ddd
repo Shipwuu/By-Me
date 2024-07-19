@@ -71,7 +71,8 @@ end
 
 local function createToggleButton()
     local screenGui = Instance.new("ScreenGui")
-    screenGui.Parent = StarterGui
+    screenGui.Name = "FlyToggleGui"
+    screenGui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
     
     local toggleButton = Instance.new("TextButton")
     toggleButton.Size = UDim2.new(0, 100, 0, 50)
