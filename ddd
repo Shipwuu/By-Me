@@ -1,223 +1,164 @@
--- Press X to fly
-
-
-
-local plr = game.Players.LocalPlayer
-
-	local mouse = plr:GetMouse()
-
-
-
-	localplayer = plr
-
-
-
-	if workspace:FindFirstChild("Core") then
-
-		workspace.Core:Destroy()
-
-	end
-
-
-
-	local Core = Instance.new("Part")
-
-	Core.Name = "Core"
-
-	Core.Size = Vector3.new(0.05, 0.05, 0.05)
-
-
-
-	spawn(function()
-
-		Core.Parent = workspace
-
-		local Weld = Instance.new("Weld", Core)
-
-		Weld.Part0 = Core
-
-		Weld.Part1 = localplayer.Character.LowerTorso
-
-		Weld.C0 = CFrame.new(0, 0, 0)
-
-	end)
-
-
-
-	workspace:WaitForChild("Core")
-
-
-
-	local torso = workspace.Core
-
-	flying = true
-
-	local speed=10
-
-	local keys={a=false,d=false,w=false,s=false}
-
-	local e1
-
-	local e2
-
-	local function start()
-
-		local pos = Instance.new("BodyPosition",torso)
-
-		local gyro = Instance.new("BodyGyro",torso)
-
-		pos.Name="EPIXPOS"
-
-		pos.maxForce = Vector3.new(math.huge, math.huge, math.huge)
-
-		pos.position = torso.Position
-
-		gyro.maxTorque = Vector3.new(9e9, 9e9, 9e9)
-
-		gyro.cframe = torso.CFrame
-
-		repeat
-
-			wait()
-
-			localplayer.Character.Humanoid.PlatformStand=true
-
-			local new=gyro.cframe - gyro.cframe.p + pos.position
-
-			if not keys.w and not keys.s and not keys.a and not keys.d then
-
-				speed=5
-
-			end
-
-			if keys.w then
-
-				new = new + workspace.CurrentCamera.CoordinateFrame.lookVector * speed
-
-				speed=speed+0
-
-			end
-
-			if keys.s then
-
-				new = new - workspace.CurrentCamera.CoordinateFrame.lookVector * speed
-
-				speed=speed+0
-
-			end
-
-			if keys.d then
-
-				new = new * CFrame.new(speed,0,0)
-
-				speed=speed+0
-
-			end
-
-			if keys.a then
-
-				new = new * CFrame.new(-speed,0,0)
-
-				speed=speed+0
-
-			end
-
-			if speed>10 then
-
-				speed=5
-
-			end
-
-			pos.position=new.p
-
-			if keys.w then
-
-				gyro.cframe = workspace.CurrentCamera.CoordinateFrame*CFrame.Angles(-math.rad(speed*0),0,0)
-
-			elseif keys.s then
-
-				gyro.cframe = workspace.CurrentCamera.CoordinateFrame*CFrame.Angles(math.rad(speed*0),0,0)
-
-			else
-
-				gyro.cframe = workspace.CurrentCamera.CoordinateFrame
-
-			end
-
-		until flying == false
-
-		if gyro then gyro:Destroy() end
-
-		if pos then pos:Destroy() end
-
-		flying=false
-
-		localplayer.Character.Humanoid.PlatformStand=false
-
-		speed=10
-
-	end
-
-	e1=mouse.KeyDown:connect(function(key)
-
-		if not torso or not torso.Parent then flying=false e1:disconnect() e2:disconnect() return end
-
-		if key=="w" then
-
-			keys.w=true
-
-		elseif key=="s" then
-
-			keys.s=true
-
-		elseif key=="a" then
-
-			keys.a=true
-
-		elseif key=="d" then
-
-			keys.d=true
-
-		elseif key=="x" then
-
-			if flying==true then
-
-				flying=false
-
-			else
-
-				flying=true
-
-				start()
-
-			end
-
-		end
-
-	end)
-
-	e2=mouse.KeyUp:connect(function(key)
-
-		if key=="w" then
-
-			keys.w=false
-
-		elseif key=="s" then
-
-			keys.s=false
-
-		elseif key=="a" then
-
-			keys.a=false
-
-		elseif key=="d" then
-
-			keys.d=false
-
-		end
-
-	end)
-
-	start()
-
+-- Services
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+
+local plr = Players.LocalPlayer
+local mouse = plr:GetMouse()
+local flying = false
+local speed = 10
+local keys = {a = false, d = false, w = false, s = false}
+local e1, e2
+
+local function getRoot(char)
+    return char:FindFirstChild("HumanoidRootPart") or char:FindFirstChildWhichIsA("BasePart")
+end
+
+-- Initialize Core Part
+if workspace:FindFirstChild("Core") then
+    workspace.Core:Destroy()
+end
+
+local Core = Instance.new("Part")
+Core.Name = "Core"
+Core.Size = Vector3.new(0.05, 0.05, 0.05)
+Core.Anchored = false
+Core.CanCollide = false
+
+local function setupCore()
+    Core.Parent = workspace
+    local Weld = Instance.new("Weld", Core)
+    Weld.Part0 = Core
+    Weld.Part1 = plr.Character:WaitForChild("LowerTorso")
+    Weld.C0 = CFrame.new(0, 0, 0)
+end
+
+setupCore()
+workspace:WaitForChild("Core")
+
+local torso = workspace.Core
+
+local function start()
+    local pos = Instance.new("BodyPosition", torso)
+    local gyro = Instance.new("BodyGyro", torso)
+    pos.Name = "EPIXPOS"
+    pos.maxForce = Vector3.new(math.huge, math.huge, math.huge)
+    pos.position = torso.Position
+    gyro.maxTorque = Vector3.new(9e9, 9e9, 9e9)
+    gyro.cframe = torso.CFrame
+
+    flying = true
+
+    local function flyStep()
+        local char = plr.Character
+        local new = gyro.cframe - gyro.cframe.p + pos.position
+
+        if not (keys.w or keys.s or keys.a or keys.d) then
+            speed = 5
+        end
+
+        if keys.w then
+            new = new + workspace.CurrentCamera.CFrame.lookVector * speed
+        end
+        if keys.s then
+            new = new - workspace.CurrentCamera.CFrame.lookVector * speed
+        end
+        if keys.d then
+            new = new * CFrame.new(speed, 0, 0)
+        end
+        if keys.a then
+            new = new * CFrame.new(-speed, 0, 0)
+        end
+
+        pos.position = new.p
+        gyro.cframe = workspace.CurrentCamera.CFrame
+
+        char.Humanoid.PlatformStand = true
+    end
+
+    RunService.RenderStepped:Connect(function()
+        if flying then
+            flyStep()
+        else
+            pos:Destroy()
+            gyro:Destroy()
+            if plr.Character and plr.Character:FindFirstChildOfClass("Humanoid") then
+                plr.Character.Humanoid.PlatformStand = false
+            end
+        end
+    end)
+end
+
+e1 = mouse.KeyDown:Connect(function(key)
+    if key == "w" then
+        keys.w = true
+    elseif key == "s" then
+        keys.s = true
+    elseif key == "a" then
+        keys.a = true
+    elseif key == "d" then
+        keys.d = true
+    elseif key == "x" then
+        if flying then
+            flying = false
+        else
+            flying = true
+            start()
+        end
+    end
 end)
+
+e2 = mouse.KeyUp:Connect(function(key)
+    if key == "w" then
+        keys.w = false
+    elseif key == "s" then
+        keys.s = false
+    elseif key == "a" then
+        keys.a = false
+    elseif key == "d" then
+        keys.d = false
+    end
+end)
+
+-- Mobile Controls
+local function setupMobileControls()
+    local moveVector = Vector3.new()
+
+    UserInputService.TouchStarted:Connect(function(input, gameProcessedEvent)
+        if gameProcessedEvent then return end
+        if input.UserInputType == Enum.UserInputType.Touch then
+            local touch = input.Position
+            moveVector = (touch - Vector2.new(workspace.CurrentCamera.ViewportSize.X/2, workspace.CurrentCamera.ViewportSize.Y/2)).unit
+        end
+    end)
+
+    UserInputService.TouchMoved:Connect(function(input, gameProcessedEvent)
+        if gameProcessedEvent then return end
+        if input.UserInputType == Enum.UserInputType.Touch then
+            local touch = input.Position
+            moveVector = (touch - Vector2.new(workspace.CurrentCamera.ViewportSize.X/2, workspace.CurrentCamera.ViewportSize.Y/2)).unit
+        end
+    end)
+
+    UserInputService.TouchEnded:Connect(function(input, gameProcessedEvent)
+        if gameProcessedEvent then return end
+        if input.UserInputType == Enum.UserInputType.Touch then
+            moveVector = Vector3.new()
+        end
+    end)
+
+    RunService.RenderStepped:Connect(function()
+        if flying then
+            if moveVector ~= Vector3.new() then
+                local moveDirection = workspace.CurrentCamera.CFrame:vectorToWorldSpace(moveVector)
+                torso.Position = torso.Position + moveDirection * speed * RunService.RenderStepped:Wait()
+            end
+        end
+    end)
+end
+
+if UserInputService.TouchEnabled then
+    setupMobileControls()
+end
+
+start()
