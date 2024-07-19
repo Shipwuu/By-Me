@@ -39,23 +39,19 @@ local function startFlying()
 
 	-- Flight logic
 	local controlModule = require(player.PlayerScripts:WaitForChild("PlayerModule"):WaitForChild("ControlModule"))
+	local lastDirection = Vector3.new(0, 0, 0)
+
 	local function updateFlight()
 		while FLYING do
 			if player.Character and player.Character:FindFirstChildOfClass("Humanoid") then
 				local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
-				local direction = controlModule:GetMoveVector()
-				local speed = vehicleflyspeed
+				local direction = controlModule:GetMoveVector() * (vehicleflyspeed or iyflyspeed) * 50
 
-				if direction.X > 0 then
-					bv.Velocity = bv.Velocity + camera.CFrame.RightVector * (direction.X * (speed * 50))
-				elseif direction.X < 0 then
-					bv.Velocity = bv.Velocity + camera.CFrame.RightVector * (direction.X * (speed * 50))
-				end
-
-				if direction.Z > 0 then
-					bv.Velocity = bv.Velocity - camera.CFrame.LookVector * (direction.Z * (speed * 50))
-				elseif direction.Z < 0 then
-					bv.Velocity = bv.Velocity - camera.CFrame.LookVector * (direction.Z * (speed * 50))
+				if direction.Magnitude > 0 then
+					bv.Velocity = direction
+					lastDirection = direction
+				else
+					bv.Velocity = lastDirection
 				end
 
 				bg.CFrame = camera.CFrame
@@ -89,9 +85,19 @@ end
 -- Function to set up the fly button in the GUI
 local function setupFlyButton()
 	local player = Players.LocalPlayer
+	local playerGui = player:WaitForChild("PlayerGui")
+
+	-- Check if the GUI already exists
+	local existingGui = playerGui:FindFirstChild("FlyButtonGui")
+	if existingGui then
+		-- If the GUI exists, just return
+		return
+	end
+
+	-- Create GUI
 	local screenGui = Instance.new("ScreenGui")
 	screenGui.Name = "FlyButtonGui"
-	screenGui.Parent = player:WaitForChild("PlayerGui")
+	screenGui.Parent = playerGui
 
 	local flyButton = Instance.new("TextButton")
 	flyButton.Size = UDim2.new(0, 100, 0, 50)
