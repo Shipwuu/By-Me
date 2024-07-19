@@ -31,7 +31,13 @@ local function startFlying()
     RunService.RenderStepped:Connect(function()
         if flying then
             bodyGyro.CFrame = workspace.CurrentCamera.CFrame
-            bodyVelocity.velocity = workspace.CurrentCamera.CFrame.lookVector * speed
+            -- Only apply movement if there's input
+            local moveDirection = controlModule:GetMoveVector()
+            if moveDirection.Magnitude > 0 then
+                bodyVelocity.velocity = workspace.CurrentCamera.CFrame:vectorToWorldSpace(moveDirection) * speed
+            else
+                bodyVelocity.velocity = Vector3.new(0, bodyVelocity.velocity.Y, 0)
+            end
         end
     end)
 
@@ -82,7 +88,7 @@ local function setupMobileControls()
             if moveDirection.Magnitude > 0 then
                 bodyVelocity.velocity = workspace.CurrentCamera.CFrame:vectorToWorldSpace(moveDirection) * speed
             else
-                bodyVelocity.velocity = workspace.CurrentCamera.CFrame.lookVector * speed
+                bodyVelocity.velocity = Vector3.new(0, bodyVelocity.velocity.Y, 0)
             end
         end
     end)
