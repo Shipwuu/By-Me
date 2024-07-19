@@ -12,49 +12,52 @@ local speed = 50
 local bodyGyro, bodyVelocity
 
 local function startFlying()
-    bodyGyro = Instance.new("BodyGyro")
+    if flying then return end
+    flying = true
+    
+    -- Create and configure BodyGyro and BodyVelocity
+    bodyGyro = Instance.new("BodyGyro", rootPart)
     bodyGyro.P = 9e4
     bodyGyro.maxTorque = Vector3.new(9e9, 9e9, 9e9)
     bodyGyro.CFrame = rootPart.CFrame
-    bodyGyro.Parent = rootPart
 
-    bodyVelocity = Instance.new("BodyVelocity")
+    bodyVelocity = Instance.new("BodyVelocity", rootPart)
     bodyVelocity.velocity = Vector3.new(0, 0, 0)
     bodyVelocity.maxForce = Vector3.new(9e9, 9e9, 9e9)
-    bodyVelocity.Parent = rootPart
 
-    flying = true
     humanoid.PlatformStand = true
 
     -- Update loop for flying
     RunService.RenderStepped:Connect(function()
-        if flying then
-            local thumbstick = UserInputService:GetThumbstick()
-            local moveDirection = Vector3.new()
-
-            if thumbstick then
-                moveDirection = Vector3.new(thumbstick.Position.X, 0, thumbstick.Position.Y)
-            end
-
-            -- Update body velocity based on input
-            if moveDirection.Magnitude > 0 then
-                bodyVelocity.velocity = moveDirection.Unit * speed
-            else
-                bodyVelocity.velocity = Vector3.new(0, bodyVelocity.velocity.Y, 0) -- Maintain Y velocity
-            end
-
-            -- Keep the character aligned with the camera
-            bodyGyro.CFrame = workspace.CurrentCamera.CFrame
+        if not flying then return end
+        
+        local thumbstick = UserInputService:GetThumbstick()
+        local moveDirection = Vector3.new()
+        
+        if thumbstick then
+            moveDirection = Vector3.new(thumbstick.Position.X, 0, thumbstick.Position.Y)
         end
+
+        -- Update body velocity based on input
+        if moveDirection.Magnitude > 0 then
+            bodyVelocity.velocity = moveDirection.Unit * speed
+        else
+            bodyVelocity.velocity = Vector3.new(0, bodyVelocity.velocity.Y, 0) -- Prevent Y-axis movement
+        end
+
+        -- Keep the character aligned with the camera
+        bodyGyro.CFrame = workspace.CurrentCamera.CFrame
     end)
 end
 
 local function stopFlying()
+    if not flying then return end
+    flying = false
+
     if bodyGyro then bodyGyro:Destroy() end
     if bodyVelocity then bodyVelocity:Destroy() end
 
     humanoid.PlatformStand = false
-    flying = false
 end
 
 local function toggleFlying()
