@@ -80,6 +80,14 @@ end
 -- Function to stop flying
 local function stopFlying()
 	FLYING = false
+	local player = Players.LocalPlayer
+	local root = getRoot(player.Character)
+	if root then
+		local bg = root:FindFirstChild(gyroHandlerName)
+		if bg then
+			bg.CFrame = CFrame.new(root.Position)  -- Set CFrame to neutral position
+		end
+	end
 end
 
 -- Function to set up the fly button in the GUI
@@ -106,6 +114,37 @@ local function setupFlyButton()
 	flyButton.Parent = screenGui
 
 	local isFlying = false
+	local dragging = false
+	local dragInput, dragStart, startPos
+
+	-- Make button draggable
+	local function updateInput(input)
+		local delta = input.Position - dragStart
+		flyButton.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+	end
+
+	flyButton.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.Touch then
+			dragging = true
+			dragInput = input
+			dragStart = input.Position
+			startPos = flyButton.Position
+			input.Changed:Connect(function()
+				if input.UserInputState == Enum.UserInputState.End then
+					dragging = false
+				end
+			end)
+		end
+	end)
+
+	flyButton.InputChanged:Connect(function(input)
+		if input == dragInput then
+			while dragging do
+				updateInput(input)
+				wait()
+			end
+		end
+	end)
 
 	flyButton.MouseButton1Click:Connect(function()
 		if not isFlying then
