@@ -1,6 +1,7 @@
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
+local StarterGui = game:GetService("StarterGui")
 
 local player = Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
@@ -25,30 +26,22 @@ local function startFlying()
     bodyVelocity.Parent = rootPart
 
     flying = true
-    humanoid.PlatformStand = true
 
     -- Update loop for flying
     RunService.RenderStepped:Connect(function()
         if flying then
-            local moveDirection = Vector3.new()
-
-            -- Check for input on mobile analog
-            local thumbstick = UserInputService:GetThumbstick()
-            if thumbstick then
-                moveDirection = Vector3.new(thumbstick.Position.X, 0, thumbstick.Position.Y)
-            end
-
-            -- Apply movement based on input
+            bodyGyro.CFrame = workspace.CurrentCamera.CFrame
+            -- Only apply movement if there's input
+            local moveDirection = controlModule:GetMoveVector()
             if moveDirection.Magnitude > 0 then
-                bodyVelocity.velocity = moveDirection.Unit * speed
+                bodyVelocity.velocity = workspace.CurrentCamera.CFrame:vectorToWorldSpace(moveDirection) * speed
             else
                 bodyVelocity.velocity = Vector3.new(0, bodyVelocity.velocity.Y, 0)
             end
-
-            -- Keep the character aligned with the camera
-            bodyGyro.CFrame = workspace.CurrentCamera.CFrame
         end
     end)
+
+    humanoid.PlatformStand = true
 end
 
 -- Function to stop flying
@@ -82,6 +75,27 @@ local function createToggleButton()
     button.BorderSizePixel = 0
 
     button.MouseButton1Click:Connect(toggleFlying)
+end
+
+-- Setup thumbstick controls for mobile
+local function setupMobileControls()
+    local playerModule = require(player:WaitForChild("PlayerScripts"):WaitForChild("PlayerModule"))
+    local controlModule = playerModule:GetControls()
+
+    RunService.RenderStepped:Connect(function()
+        if flying then
+            local moveDirection = controlModule:GetMoveVector()
+            if moveDirection.Magnitude > 0 then
+                bodyVelocity.velocity = workspace.CurrentCamera.CFrame:vectorToWorldSpace(moveDirection) * speed
+            else
+                bodyVelocity.velocity = Vector3.new(0, bodyVelocity.velocity.Y, 0)
+            end
+        end
+    end)
+end
+
+if UserInputService.TouchEnabled then
+    setupMobileControls()
 end
 
 createToggleButton()
