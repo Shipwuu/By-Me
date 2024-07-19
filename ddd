@@ -1,123 +1,88 @@
--- Services
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
+local StarterGui = game:GetService("StarterGui")
 
-local plr = Players.LocalPlayer
-local mouse = plr:GetMouse()
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+local rootPart = character:WaitForChild("HumanoidRootPart")
+
 local flying = false
-local speed = 10
-local moveDirection = Vector3.new()
-local swipeStart = Vector2.new()
-local swipeEnd = Vector2.new()
+local speed = 50
+local bodyGyro, bodyVelocity
 
-local function getRoot(char)
-    return char:FindFirstChild("HumanoidRootPart") or char:FindFirstChildWhichIsA("BasePart")
-end
+-- Function to start flying
+local function startFlying()
+    bodyGyro = Instance.new("BodyGyro")
+    bodyGyro.P = 9e4
+    bodyGyro.maxTorque = Vector3.new(9e9, 9e9, 9e9)
+    bodyGyro.CFrame = rootPart.CFrame
+    bodyGyro.Parent = rootPart
 
--- Initialize Core Part
-if workspace:FindFirstChild("Core") then
-    workspace.Core:Destroy()
-end
-
-local Core = Instance.new("Part")
-Core.Name = "Core"
-Core.Size = Vector3.new(0.05, 0.05, 0.05)
-Core.Anchored = false
-Core.CanCollide = false
-
-local function setupCore()
-    Core.Parent = workspace
-    local Weld = Instance.new("Weld", Core)
-    Weld.Part0 = Core
-    Weld.Part1 = plr.Character:WaitForChild("LowerTorso")
-    Weld.C0 = CFrame.new(0, 0, 0)
-end
-
-setupCore()
-workspace:WaitForChild("Core")
-
-local torso = workspace.Core
-
-local function start()
-    local pos = Instance.new("BodyPosition", torso)
-    local gyro = Instance.new("BodyGyro", torso)
-    pos.Name = "EPIXPOS"
-    pos.maxForce = Vector3.new(math.huge, math.huge, math.huge)
-    pos.position = torso.Position
-    gyro.maxTorque = Vector3.new(9e9, 9e9, 9e9)
-    gyro.cframe = torso.CFrame
+    bodyVelocity = Instance.new("BodyVelocity")
+    bodyVelocity.velocity = Vector3.new(0, 0, 0)
+    bodyVelocity.maxForce = Vector3.new(9e9, 9e9, 9e9)
+    bodyVelocity.Parent = rootPart
 
     flying = true
 
-    local function flyStep()
-        local char = plr.Character
-        local new = gyro.cframe - gyro.cframe.p + pos.position
-
-        if moveDirection.Magnitude > 0 then
-            new = new + workspace.CurrentCamera.CFrame:vectorToWorldSpace(moveDirection) * speed
-        end
-
-        pos.position = new.p
-        gyro.cframe = workspace.CurrentCamera.CFrame
-
-        char.Humanoid.PlatformStand = true
-    end
-
+    -- Update loop for flying
     RunService.RenderStepped:Connect(function()
         if flying then
-            flyStep()
-        else
-            pos:Destroy()
-            gyro:Destroy()
-            if plr.Character and plr.Character:FindFirstChildOfClass("Humanoid") then
-                plr.Character.Humanoid.PlatformStand = false
-            end
+            bodyGyro.CFrame = workspace.CurrentCamera.CFrame
+            bodyVelocity.velocity = workspace.CurrentCamera.CFrame.lookVector * speed
         end
     end)
+
+    humanoid.PlatformStand = true
 end
 
-e1 = mouse.KeyDown:Connect(function(key)
-    if key == "x" then
-        if flying then
-            flying = false
-        else
-            flying = true
-            start()
-        end
+-- Function to stop flying
+local function stopFlying()
+    if bodyGyro then bodyGyro:Destroy() end
+    if bodyVelocity then bodyVelocity:Destroy() end
+
+    humanoid.PlatformStand = false
+    flying = false
+end
+
+-- Toggle flying state
+local function toggleFlying()
+    if flying then
+        stopFlying()
+    else
+        startFlying()
     end
-end)
+end
 
--- Mobile Controls
+-- Create toggle button
+local function createToggleButton()
+    local screenGui = Instance.new("ScreenGui", player.PlayerGui)
+    local button = Instance.new("TextButton", screenGui)
+    button.Size = UDim2.new(0, 200, 0, 50)
+    button.Position = UDim2.new(0.5, -100, 0.9, -25)
+    button.Text = "Toggle Fly"
+    button.BackgroundColor3 = Color3.fromRGB(0, 0, 255)
+    button.TextColor3 = Color3.fromRGB(255, 255, 255)
+    button.TextScaled = true
+    button.BorderSizePixel = 0
+
+    button.MouseButton1Click:Connect(toggleFlying)
+end
+
+-- Setup thumbstick controls for mobile
 local function setupMobileControls()
-    UserInputService.TouchStarted:Connect(function(input, gameProcessedEvent)
-        if gameProcessedEvent then return end
-        if input.UserInputType == Enum.UserInputType.Touch then
-            swipeStart = input.Position
-        end
-    end)
-
-    UserInputService.TouchMoved:Connect(function(input, gameProcessedEvent)
-        if gameProcessedEvent then return end
-        if input.UserInputType == Enum.UserInputType.Touch then
-            swipeEnd = input.Position
-            local swipeVector = (swipeEnd - swipeStart).unit
-            moveDirection = Vector3.new(swipeVector.X, 0, -swipeVector.Y)
-        end
-    end)
-
-    UserInputService.TouchEnded:Connect(function(input, gameProcessedEvent)
-        if gameProcessedEvent then return end
-        if input.UserInputType == Enum.UserInputType.Touch then
-            moveDirection = Vector3.new()
-        end
-    end)
+    local playerModule = require(player:WaitForChild("PlayerScripts"):WaitForChild("PlayerModule"))
+    local controlModule = playerModule:GetControls()
 
     RunService.RenderStepped:Connect(function()
         if flying then
+            local moveDirection = controlModule:GetMoveVector()
             if moveDirection.Magnitude > 0 then
-                local moveDirWorld = workspace.CurrentCamera.CFrame:vectorToWorldSpace(moveDirection)
-                torso.Position = torso.Position + moveDirWorld * speed * RunService.RenderStepped:Wait()
+                bodyVelocity.velocity = workspace.CurrentCamera.CFrame:vectorToWorldSpace(moveDirection) * speed
+            else
+                bodyVelocity.velocity = workspace.CurrentCamera.CFrame.lookVector * speed
             end
         end
     end)
@@ -127,4 +92,4 @@ if UserInputService.TouchEnabled then
     setupMobileControls()
 end
 
-start()
+createToggleButton()
