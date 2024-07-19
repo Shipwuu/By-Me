@@ -11,6 +11,22 @@ local flying = false
 local speed = 50
 local bodyGyro, bodyVelocity
 
+local moveDirection = Vector3.new()
+
+-- Track joystick input
+local function onInputChanged(input)
+    if input.UserInputType == Enum.UserInputType.Touch then
+        local thumbstick = UserInputService:GetTouchPositions()
+        if #thumbstick > 0 then
+            local thumbstickPosition = thumbstick[1] -- Only the first touch for simplicity
+            local screenSize = UserInputService:GetScreenSize()
+            local normalizedPosition = Vector2.new(thumbstickPosition.X / screenSize.X, thumbstickPosition.Y / screenSize.Y)
+
+            moveDirection = Vector3.new((normalizedPosition.X - 0.5) * 2, 0, (normalizedPosition.Y - 0.5) * 2)
+        end
+    end
+end
+
 local function startFlying()
     if flying then return end
     flying = true
@@ -31,13 +47,6 @@ local function startFlying()
     RunService.RenderStepped:Connect(function()
         if not flying then return end
         
-        local thumbstick = UserInputService:GetThumbstick()
-        local moveDirection = Vector3.new()
-        
-        if thumbstick then
-            moveDirection = Vector3.new(thumbstick.Position.X, 0, thumbstick.Position.Y)
-        end
-
         -- Update body velocity based on input
         if moveDirection.Magnitude > 0 then
             bodyVelocity.velocity = moveDirection.Unit * speed
@@ -67,6 +76,9 @@ local function toggleFlying()
         startFlying()
     end
 end
+
+-- Bind input changes to handle joystick movement
+UserInputService.InputChanged:Connect(onInputChanged)
 
 local function createToggleButton()
     local screenGui = Instance.new("ScreenGui", player.PlayerGui)
