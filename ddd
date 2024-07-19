@@ -7,8 +7,9 @@ local plr = Players.LocalPlayer
 local mouse = plr:GetMouse()
 local flying = false
 local speed = 10
-local keys = {a = false, d = false, w = false, s = false}
-local e1, e2
+local moveDirection = Vector3.new()
+local swipeStart = Vector2.new()
+local swipeEnd = Vector2.new()
 
 local function getRoot(char)
     return char:FindFirstChild("HumanoidRootPart") or char:FindFirstChildWhichIsA("BasePart")
@@ -53,21 +54,8 @@ local function start()
         local char = plr.Character
         local new = gyro.cframe - gyro.cframe.p + pos.position
 
-        if not (keys.w or keys.s or keys.a or keys.d) then
-            speed = 5
-        end
-
-        if keys.w then
-            new = new + workspace.CurrentCamera.CFrame.lookVector * speed
-        end
-        if keys.s then
-            new = new - workspace.CurrentCamera.CFrame.lookVector * speed
-        end
-        if keys.d then
-            new = new * CFrame.new(speed, 0, 0)
-        end
-        if keys.a then
-            new = new * CFrame.new(-speed, 0, 0)
+        if moveDirection.Magnitude > 0 then
+            new = new + workspace.CurrentCamera.CFrame:vectorToWorldSpace(moveDirection) * speed
         end
 
         pos.position = new.p
@@ -90,15 +78,7 @@ local function start()
 end
 
 e1 = mouse.KeyDown:Connect(function(key)
-    if key == "w" then
-        keys.w = true
-    elseif key == "s" then
-        keys.s = true
-    elseif key == "a" then
-        keys.a = true
-    elseif key == "d" then
-        keys.d = true
-    elseif key == "x" then
+    if key == "x" then
         if flying then
             flying = false
         else
@@ -108,50 +88,36 @@ e1 = mouse.KeyDown:Connect(function(key)
     end
 end)
 
-e2 = mouse.KeyUp:Connect(function(key)
-    if key == "w" then
-        keys.w = false
-    elseif key == "s" then
-        keys.s = false
-    elseif key == "a" then
-        keys.a = false
-    elseif key == "d" then
-        keys.d = false
-    end
-end)
-
 -- Mobile Controls
 local function setupMobileControls()
-    local moveVector = Vector3.new()
-
     UserInputService.TouchStarted:Connect(function(input, gameProcessedEvent)
         if gameProcessedEvent then return end
         if input.UserInputType == Enum.UserInputType.Touch then
-            local touch = input.Position
-            moveVector = (touch - Vector2.new(workspace.CurrentCamera.ViewportSize.X/2, workspace.CurrentCamera.ViewportSize.Y/2)).unit
+            swipeStart = input.Position
         end
     end)
 
     UserInputService.TouchMoved:Connect(function(input, gameProcessedEvent)
         if gameProcessedEvent then return end
         if input.UserInputType == Enum.UserInputType.Touch then
-            local touch = input.Position
-            moveVector = (touch - Vector2.new(workspace.CurrentCamera.ViewportSize.X/2, workspace.CurrentCamera.ViewportSize.Y/2)).unit
+            swipeEnd = input.Position
+            local swipeVector = (swipeEnd - swipeStart).unit
+            moveDirection = Vector3.new(swipeVector.X, 0, -swipeVector.Y)
         end
     end)
 
     UserInputService.TouchEnded:Connect(function(input, gameProcessedEvent)
         if gameProcessedEvent then return end
         if input.UserInputType == Enum.UserInputType.Touch then
-            moveVector = Vector3.new()
+            moveDirection = Vector3.new()
         end
     end)
 
     RunService.RenderStepped:Connect(function()
         if flying then
-            if moveVector ~= Vector3.new() then
-                local moveDirection = workspace.CurrentCamera.CFrame:vectorToWorldSpace(moveVector)
-                torso.Position = torso.Position + moveDirection * speed * RunService.RenderStepped:Wait()
+            if moveDirection.Magnitude > 0 then
+                local moveDirWorld = workspace.CurrentCamera.CFrame:vectorToWorldSpace(moveDirection)
+                torso.Position = torso.Position + moveDirWorld * speed * RunService.RenderStepped:Wait()
             end
         end
     end)
