@@ -12,7 +12,12 @@ local rootPart = character:WaitForChild("HumanoidRootPart")
 local flying = false
 local speed = 50
 local bodyGyro, bodyVelocity
+local CONTROL = {F = 0, B = 0, L = 0, R = 0, Q = 0, E = 0}
+local lCONTROL = {F = 0, B = 0, L = 0, R = 0, Q = 0, E = 0}
+local QEfly = true
+local flyKeyDown, flyKeyUp
 
+-- Function to start flying
 local function startFlying()
     if flying then return end
 
@@ -35,27 +40,21 @@ local function startFlying()
         if flying then
             local moveDirection = Vector3.new()
 
-            -- Handle mobile controls
-            local thumbstick = UserInputService:GetThumbstick()
-            if thumbstick then
-                moveDirection = Vector3.new(thumbstick.Position.X, 0, thumbstick.Position.Y)
-            else
-                -- Handle desktop controls
-                local moveVector = Vector3.zero
-                if UserInputService:IsKeyDown(Enum.KeyCode.W) then
-                    moveVector = moveVector + workspace.CurrentCamera.CFrame.LookVector
-                end
-                if UserInputService:IsKeyDown(Enum.KeyCode.S) then
-                    moveVector = moveVector - workspace.CurrentCamera.CFrame.LookVector
-                end
-                if UserInputService:IsKeyDown(Enum.KeyCode.A) then
-                    moveVector = moveVector - workspace.CurrentCamera.CFrame.RightVector
-                end
-                if UserInputService:IsKeyDown(Enum.KeyCode.D) then
-                    moveVector = moveVector + workspace.CurrentCamera.CFrame.RightVector
-                end
-                moveDirection = Vector3.new(moveVector.X, 0, moveVector.Z)
+            -- Handle desktop controls
+            local moveVector = Vector3.zero
+            if UserInputService:IsKeyDown(Enum.KeyCode.W) then
+                moveVector = moveVector + workspace.CurrentCamera.CFrame.LookVector
             end
+            if UserInputService:IsKeyDown(Enum.KeyCode.S) then
+                moveVector = moveVector - workspace.CurrentCamera.CFrame.LookVector
+            end
+            if UserInputService:IsKeyDown(Enum.KeyCode.A) then
+                moveVector = moveVector - workspace.CurrentCamera.CFrame.RightVector
+            end
+            if UserInputService:IsKeyDown(Enum.KeyCode.D) then
+                moveVector = moveVector + workspace.CurrentCamera.CFrame.RightVector
+            end
+            moveDirection = Vector3.new(moveVector.X, 0, moveVector.Z)
 
             -- Update body velocity based on input
             if moveDirection.Magnitude > 0 then
@@ -70,6 +69,7 @@ local function startFlying()
     end)
 end
 
+-- Function to stop flying
 local function stopFlying()
     if bodyGyro then bodyGyro:Destroy() end
     if bodyVelocity then bodyVelocity:Destroy() end
@@ -78,6 +78,7 @@ local function stopFlying()
     flying = false
 end
 
+-- Function to toggle flying mode
 local function toggleFlying()
     if flying then
         stopFlying()
@@ -86,12 +87,10 @@ local function toggleFlying()
     end
 end
 
+-- Function to create the UI button
 local function createToggleButton()
-    local screenGui = Instance.new("ScreenGui")
-    screenGui.Name = "FlyToggleGui"
-    screenGui.Parent = player:WaitForChild("PlayerGui")
-
-    local button = Instance.new("TextButton")
+    local screenGui = Instance.new("ScreenGui", player.PlayerGui)
+    local button = Instance.new("TextButton", screenGui)
     button.Size = UDim2.new(0, 200, 0, 50)
     button.Position = UDim2.new(0.5, -100, 0.9, -25)
     button.Text = "Toggle Fly"
@@ -99,9 +98,48 @@ local function createToggleButton()
     button.TextColor3 = Color3.fromRGB(255, 255, 255)
     button.TextScaled = true
     button.BorderSizePixel = 0
-    button.Parent = screenGui
 
     button.MouseButton1Click:Connect(toggleFlying)
 end
 
+-- Function to handle key input for flying controls
+local function setupControls()
+    flyKeyDown = UserInputService.InputBegan:Connect(function(input)
+        if flying then
+            if input.KeyCode == Enum.KeyCode.W then
+                CONTROL.F = speed
+            elseif input.KeyCode == Enum.KeyCode.S then
+                CONTROL.B = -speed
+            elseif input.KeyCode == Enum.KeyCode.A then
+                CONTROL.L = -speed
+            elseif input.KeyCode == Enum.KeyCode.D then
+                CONTROL.R = speed
+            elseif QEfly and input.KeyCode == Enum.KeyCode.E then
+                CONTROL.Q = speed * 2
+            elseif QEfly and input.KeyCode == Enum.KeyCode.Q then
+                CONTROL.E = -speed * 2
+            end
+        end
+    end)
+
+    flyKeyUp = UserInputService.InputEnded:Connect(function(input)
+        if flying then
+            if input.KeyCode == Enum.KeyCode.W then
+                CONTROL.F = 0
+            elseif input.KeyCode == Enum.KeyCode.S then
+                CONTROL.B = 0
+            elseif input.KeyCode == Enum.KeyCode.A then
+                CONTROL.L = 0
+            elseif input.KeyCode == Enum.KeyCode.D then
+                CONTROL.R = 0
+            elseif input.KeyCode == Enum.KeyCode.E then
+                CONTROL.Q = 0
+            elseif input.KeyCode == Enum.KeyCode.Q then
+                CONTROL.E = 0
+            end
+        end
+    end)
+end
+
 createToggleButton()
+setupControls()
