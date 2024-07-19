@@ -8,8 +8,8 @@ local gyroHandlerName = "GyroHandler"
 local vehicleflyspeed = 1
 local iyflyspeed = 1
 local FLYING = false
-local speed = 0
 local maxspeed = 50
+local speed = 0
 local lastDirection = Vector3.new(0, 0, 0)
 
 -- Utility function to get the root part of a character
@@ -50,6 +50,7 @@ local function startFlying()
 				local direction = controlModule:GetMoveVector()
 				local moveDirection = direction * (vehicleflyspeed or iyflyspeed) * 50
 
+				-- Adjust speed and direction
 				if moveDirection.Magnitude > 0 then
 					speed = math.min(speed + 0.5 + (speed / maxspeed), maxspeed)
 					bv.Velocity = moveDirection
@@ -59,6 +60,7 @@ local function startFlying()
 					bv.Velocity = lastDirection * speed
 				end
 
+				-- Update BodyGyro CFrame
 				bg.CFrame = camera.CFrame
 				humanoid.PlatformStand = true
 			end
@@ -118,15 +120,14 @@ local function setupFlyButton()
 	flyButton.Text = "Fly"
 	flyButton.Parent = screenGui
 
-	local isFlying = false
-	local dragging = false
-	local dragInput, dragStart, startPos
-
-	-- Make button draggable
+	-- Draggable button for mobile
 	local function updateInput(input)
 		local delta = input.Position - dragStart
 		flyButton.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
 	end
+
+	local dragging = false
+	local dragInput, dragStart, startPos
 
 	flyButton.InputBegan:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.Touch then
@@ -151,6 +152,8 @@ local function setupFlyButton()
 		end
 	end)
 
+	-- Toggle flying state on button click
+	local isFlying = false
 	flyButton.MouseButton1Click:Connect(function()
 		if not isFlying then
 			startFlying()
