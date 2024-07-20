@@ -167,7 +167,7 @@ for _, ghost in pairs(Workspace:GetChildren()) do
         local boxAdornment = Instance.new("BoxHandleAdornment")
         boxAdornment.Adornee = ghost.HumanoidRootPart
         boxAdornment.AlwaysOnTop = true
-        boxAdornment.Color3 = Color3.fromRGB(255, 250, 250)
+        boxAdornment.Color3 = Color3.fromRGB(255, 0, 0)
         boxAdornment.Size = Vector3.new(2, 2, 1)
         boxAdornment.Transparency = 0.5
         boxAdornment.ZIndex = 2
