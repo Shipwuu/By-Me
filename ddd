@@ -30,7 +30,7 @@ local Library = engine:init()
 -- Documentation: https://pastebin.com/raw/H3ARQ6ZE
 
 --< Window >--
-local Windows = {'Main', 'Client', 'ESP', 'Credits', 'Information', 'Teleports'}
+local Windows = {'Information'}
 local TempWindows = {}
 local XPosition,YPosition = 0
 local XSize,YSize = 200, 150
@@ -60,12 +60,9 @@ local Columns = {}
 for Index,Value in pairs(Windows) do
     Columns[Index] = {}
 end
-table.insert(Columns['Main'], Windows:addColumn('Main', 170))
-table.insert(Columns['Client'], Windows:addColumn('Client'))
-table.insert(Columns['ESP'], Windows:addColumn('ESP'))
-table.insert(Columns['Credits'], Windows:addColumn('Credits'))
+
 table.insert(Columns['Information'], Windows:addColumn('Information', 180))
-table.insert(Columns['Teleports'], Windows:addColumn('Teleports'))
+
 
 --< Global Variable >--
 Players = game:GetService('Players')
