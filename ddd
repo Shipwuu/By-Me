@@ -1,104 +1,131 @@
-local Players = game:GetService('Players')
-local client = Players.LocalPlayer
-local Camera = workspace.CurrentCamera
 
-local Items = workspace:FindFirstChild('Items')
-local GhostName = workspace:FindFirstChild('Van') and workspace.Van.Objectives.SurfaceGui.Frame.Objectives.GhostInfo.Text:split('is ')[2]:match('>(.+)<')
-local Rooms = workspace:FindFirstChild('House') and workspace.House:FindFirstChild('Rooms')
-
--- Remove GUI if it already exists
-if client:FindFirstChild('PlayerGui'):FindFirstChild('InfoGui') then
-    client:FindFirstChild('PlayerGui'):FindFirstChild('InfoGui'):Destroy()
-end
-
-local ScreenGui = Instance.new('ScreenGui')
-local Frame = Instance.new('Frame')
-local UIListLayout = Instance.new('UIListLayout')
-
-ScreenGui.Name = "InfoGui"
-ScreenGui.Parent = client:WaitForChild('PlayerGui')
-
-Frame.Parent = ScreenGui
-Frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-Frame.BackgroundTransparency = 0.5
-Frame.BorderSizePixel = 0
-Frame.Position = UDim2.new(0, 10, 0, 10)
-Frame.Size = UDim2.new(0, 200, 0, 300)
-Frame.ClipsDescendants = true
-Frame.Active = true
-Frame.Draggable = true
-
-UIListLayout.Parent = Frame
-UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-UIListLayout.Padding = UDim.new(0, 5)
-
-local function createLabel(text)
-    local label = Instance.new('TextLabel')
-    label.Text = text
-    label.Font = Enum.Font.Arial
-    label.TextSize = 12
-    label.TextColor3 = Color3.fromRGB(255, 255, 255)
-    label.BackgroundTransparency = 1
-    label.Size = UDim2.new(1, 0, 0, 20)
-    label.Parent = Frame
-    return label
-end
-
-local playerNameLabel = createLabel('Name: ' .. client.Name)
-local sanityLabel = createLabel('Sanity: %s')
-local roomLabel = createLabel('Room: %s')
-local peaceLabel = createLabel('Peace: %s')
-local ghostNameLabel = createLabel('\nName: ' .. (GhostName or "Unknown"))
-local huntingLabel = createLabel('Hunting: %s')
-local ghostRoomLabel = createLabel('Room: %s')
-local favoriteRoomLabel = createLabel('Favorite Room: %s')
-
-local function updateLabels()
-    sanityLabel.Text = 'Sanity: ' .. (client:FindFirstChild('Sanity') and client.Sanity.Value or "Unknown") .. '%'
-    roomLabel.Text = 'Room: ' .. (client.Character and client.Character.Parent and client.Character.Parent.Name or "Unknown")
-    peaceLabel.Text = 'Peace: %s'
-    huntingLabel.Text = 'Hunting: %s'
-    ghostRoomLabel.Text = 'Room: %s'
-    favoriteRoomLabel.Text = 'Favorite Room: %s'
-end
-
-game:GetService('RunService').RenderStepped:Connect(updateLabels)
-
--- Making the button draggable on mobile or android
-local UserInputService = game:GetService("UserInputService")
-
-local dragging
-local dragInput
-local dragStart
-local startPos
-
-local function update(input)
-    local delta = input.Position - dragStart
-    Frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-end
-
-Frame.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        dragging = true
-        dragStart = input.Position
-        startPos = Frame.Position
+--< GUI Settings >--
+local setting = {
+    theme = {
+        images = {
+            open_ui_icon = "rbxassetid://4521836217",
+            close_ui_icon = "rbxassetid://4510354080",
+        };
         
-        input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then
-                dragging = false
-            end
+        colors = {
+            ["primary color"] = Color3.fromRGB(192, 57, 43),
+            ["secondary color"] = Color3.fromRGB(37, 41, 43),
+            ["drag click"] = Color3.fromRGB(106, 30, 23),
+            ["on color"] = Color3.fromRGB(48, 255, 162),
+            ["exit click"] = Color3.fromRGB(255, 50, 50),
+            ["text color"] = Color3.fromRGB(255, 255, 255)
+        },
+        
+        font = "SourceSans",
+        hotkey = Enum.KeyCode.Insert
+    };
+}
+
+--< Library >--
+local engine = loadstring(game:HttpGet("https://navicat.glitch.me/ui3.lua"))() --// Original https://pastebin.com/raw/y0iyJTiN
+
+--< Initialized UI >--
+local engine = engine(setting)
+local Library = engine:init()
+-- Documentation: https://pastebin.com/raw/H3ARQ6ZE
+
+--< Window >--
+local Windows = {'Main', 'Client', 'ESP', 'Credits', 'Information', 'Teleports'}
+local TempWindows = {}
+local XPosition,YPosition = 0
+local XSize,YSize = 200, 150
+for Index,Value in pairs(Windows) do
+    if type(Value) ~= 'string' then Value = tostring(Value) end
+    if XPosition >= 800 then
+        XPosition = 0
+        YPosition = YSize + 24
+    end
+    TempWindows[Value] = Library:create('window', '<semibold>' .. Value, {
+        resizeable = false,
+        default_position = UDim2.new(0, XPosition, 0, YPosition),
+        default_size = UDim2.new(0, XSize, 0, YSize)
+    })
+    Windows[Index] = nil
+    XPosition = XPosition + (XSize + 4)
+end
+Windows = TempWindows
+
+function Windows:addColumn(window, size)
+    size = size or 140
+    return self[window]:create('column', size)
+end
+
+--< Column >--
+local Columns = {}
+for Index,Value in pairs(Windows) do
+    Columns[Index] = {}
+end
+table.insert(Columns['Main'], Windows:addColumn('Main', 170))
+table.insert(Columns['Client'], Windows:addColumn('Client'))
+table.insert(Columns['ESP'], Windows:addColumn('ESP'))
+table.insert(Columns['Credits'], Windows:addColumn('Credits'))
+table.insert(Columns['Information'], Windows:addColumn('Information', 180))
+table.insert(Columns['Teleports'], Windows:addColumn('Teleports'))
+
+--< Global Variable >--
+Players = game:GetService('Players')
+client = Players.LocalPlayer
+Camera = workspace.CurrentCamera
+
+Items = workspace:FindFirstChild('Items')
+GhostName = workspace:FindFirstChild('Van').Objectives.SurfaceGui.Frame.Objectives.GhostInfo.Text:split('is ')[2]:match('>(.+)<')
+Rooms = workspace:FindFirstChild('House') and workspace.House:FindFirstChild('Rooms')
+
+Main = {    
+    FindEvidence = false,
+    AutoEvidence = false,
+    AutoAggro = false,
+}
+Client = {
+    Noclip = false,
+    Speedhack = false,
+    Nofog = false,
+    Fullbright = false
+}
+ESP = {
+    Enabled = false,
+    Ghost = false,
+    Player = false,
+    Items = false,
+    
+    Color = Color3.fromRGB(192, 57, 43),
+    Type = '1',
+    Objects = {}   
+}
+
+Evidence = {}
+GhostRoom = {}
+IsReady = false
+Step = '0'
+
+function log(...) return print('[WRAPPER]:', ...) end
+local Init = loadstring(game:HttpGet('https://navicat.glitch.me/Specter/Init.lua'))()
+coroutine.wrap(Init)()
+
+spawn(function()
+    while IsReady == 'Fail' do wait()
+        Columns['Main'][1]:create('button', 'Init Ghost Room', function()
+            Step = '1'
+            coroutine.wrap(Init)()
         end)
+        return
     end
 end)
 
-Frame.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-        dragInput = input
-    end
-end)
-
-UserInputService.InputChanged:Connect(function(input)
-    if input == dragInput and dragging then
-        update(input)
-    end
-end)
+-- Information
+local FSize = 12
+do
+    Columns['Information'][1]:create('label', {Text = ('Name: %s'):format(client.Name), FontSize = FSize, Font = 'Arial', Color3.fromRGB(255,255,255)})
+    ISanity = Columns['Information'][1]:create('label', {Text = 'Sanity: %s%', FontSize = FSize, Font = 'Arial', Color3.fromRGB(255,255,255)})
+    ICRoom = Columns['Information'][1]:create('label', {Text = 'Room: %s', FontSize = FSize, Font = 'Arial', Color3.fromRGB(255,255,255)})
+    IPeace = Columns['Information'][1]:create('label', {Text = ('Peace: %s'), FontSize = FSize, Font = 'Arial', Color3.fromRGB(255,255,255)})
+    Columns['Information'][1]:create('label', {Text = ('\nName: %s'):format(GhostName), FontSize = FSize, Font = 'Arial', Color3.fromRGB(255,255,255)})
+    IGHunting = Columns['Information'][1]:create('label', {Text = ('Hunting: %s'), FontSize = FSize, Font = 'Arial', Color3.fromRGB(255,255,255)})
+    IGRoom = Columns['Information'][1]:create('label', {Text = ('Room: %s'), FontSize = FSize, Font = 'Arial', Color3.fromRGB(255,255,255)})
+    IGFRoom = Columns['Information'][1]:create('label', {Text = ('Favorite Room: %s'), FontSize = FSize, Font = 'Arial', Color3.fromRGB(255,255,255)})
+end
