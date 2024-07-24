@@ -118,19 +118,18 @@ local function createBillboardGui(adornedPart, text, color)
     local textLabel = Instance.new("TextLabel")
 
     billboardGui.Adornee = adornedPart
-    billboardGui.Size = UDim2.new(0, 100, 0, 150)
-    billboardGui.StudsOffset = Vector3.new(0, 1, 0)
+    billboardGui.Size = UDim2.new(0, 100, 0, 100)
+    billboardGui.StudsOffset = Vector3.new(0, 2, 0)  -- Adjusted offset
     billboardGui.AlwaysOnTop = true
 
     textLabel.Parent = billboardGui
     textLabel.BackgroundTransparency = 1
-    textLabel.Position = UDim2.new(0, 0, 0, -50)
-    textLabel.Size = UDim2.new(0, 100, 0, 100)
+    textLabel.Position = UDim2.new(0, 0, 0, 0)
+    textLabel.Size = UDim2.new(1, 0, 1, 0)
     textLabel.Font = Enum.Font.SourceSansSemibold
-    textLabel.TextSize = 14
+    textLabel.TextSize = 18
     textLabel.TextColor3 = color
-    textLabel.TextStrokeTransparency = 0
-    textLabel.TextYAlignment = Enum.TextYAlignment.Bottom
+    textLabel.TextStrokeTransparency = 0.5
     textLabel.Text = text
     textLabel.ZIndex = 10
 
@@ -138,31 +137,62 @@ local function createBillboardGui(adornedPart, text, color)
 end
 
 local function addBillboardGuiToPart(name, text, color)
-    for _, part in pairs(Workspace:GetChildren()) do
-        if part.Name == name then
-            local billboardGui = createBillboardGui(part, text, color)
-            billboardGui.Parent = part
+    local function createBillboard(part)
+        local billboardGui = createBillboardGui(part, text, color)
+        billboardGui.Parent = part
+        return billboardGui
+    end
+
+    local function onPartAdded(child)
+        if child.Name == name then
+            createBillboard(child)
         end
     end
 
-    Workspace.ChildAdded:Connect(function(child)
+    -- Check existing parts
+    for _, part in pairs(workspace:GetChildren()) do
+        if part.Name == name then
+            createBillboard(part)
+        end
+    end
+
+    -- Listen for new parts
+    workspace.ChildAdded:Connect(function(child)
         if child.Name == name then
-            local billboardGui = createBillboardGui(child, text, color)
-            billboardGui.Parent = child
+            createBillboard(child)
         end
     end)
 end
 
--- Adding the specified billboard
+-- Adding the specified billboards
 addBillboardGuiToPart("emfpart2", "Emf2", Color3.fromRGB(0, 0, 255))
-
--- Existing billboard additions
 addBillboardGuiToPart("Orb", "Orb", Color3.fromRGB(30, 144, 255))
 addBillboardGuiToPart("emfpart5", "Emf5", Color3.fromRGB(255, 0, 0))
 addBillboardGuiToPart("emfpart3", "Emf3", Color3.fromRGB(100, 140, 0))
 addBillboardGuiToPart("emfpart4", "Emf4", Color3.fromRGB(100, 69, 0))
 
-for _, ghost in pairs(Workspace:GetChildren()) do
+-- Listen for new ghosts and add ESP
+workspace.ChildAdded:Connect(function(child)
+    if child.Name == "GhostModel" and child:FindFirstChild("Humanoid") then
+        local ghost = child
+        local boxAdornment = Instance.new("BoxHandleAdornment")
+        boxAdornment.Adornee = ghost.HumanoidRootPart
+        boxAdornment.AlwaysOnTop = true
+        boxAdornment.Color3 = Color3.fromRGB(255, 0, 0)
+        boxAdornment.Size = Vector3.new(3, 3, 2)
+        boxAdornment.Transparency = 0.5
+        boxAdornment.ZIndex = 2
+        boxAdornment.Parent = ghost
+        boxAdornment.Name = "ESP"
+
+        local ghostName = ghost.Name  -- Replace with your method of getting ghost name
+        local ghostGui = createBillboardGui(ghost.HumanoidRootPart, "Ghost Name: " .. ghostName, Color3.new(1, 1, 1))
+        ghostGui.Parent = ghost
+    end
+end)
+
+-- Check existing ghosts
+for _, ghost in pairs(workspace:GetChildren()) do
     if ghost.Name == "GhostModel" and ghost:FindFirstChild("Humanoid") then
         local boxAdornment = Instance.new("BoxHandleAdornment")
         boxAdornment.Adornee = ghost.HumanoidRootPart
@@ -174,7 +204,8 @@ for _, ghost in pairs(Workspace:GetChildren()) do
         boxAdornment.Parent = ghost
         boxAdornment.Name = "ESP"
 
-        local ghostGui = createBillboardGui(ghost.HumanoidRootPart, "Ghost Name: " .. Workspace:FindFirstChild("Van").Objectives.SurfaceGui.Frame.Objectives.GhostInfo.Text:split("is ")[2]:match(">(.+)<"), Color3.new(1, 1, 1))
+        local ghostName = ghost.Name  -- Replace with your method of getting ghost name
+        local ghostGui = createBillboardGui(ghost.HumanoidRootPart, "Ghost Name: " .. ghostName, Color3.new(1, 1, 1))
         ghostGui.Parent = ghost
     end
 end
