@@ -71,9 +71,7 @@ end
 table.insert(Columns['Main'], Windows:addColumn('Main', 170))
 table.insert(Columns['Client'], Windows:addColumn('Client'))
 table.insert(Columns['ESP'], Windows:addColumn('ESP'))
-table.insert(Columns['Credits'], Windows:addColumn('Credits'))
 table.insert(Columns['Information'], Windows:addColumn('Information', 180))
-table.insert(Columns['Teleports'], Windows:addColumn('Teleports'))
 
 --< Global Variable >--
 Players = game:GetService('Players')
