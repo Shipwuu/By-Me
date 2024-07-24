@@ -83,9 +83,9 @@ GhostName = workspace:FindFirstChild('Van').Objectives.SurfaceGui.Frame.Objectiv
 Rooms = workspace:FindFirstChild('House') and workspace.House:FindFirstChild('Rooms')
 
 Main = {    
-    FindEvidence = false,
-    AutoEvidence = false,
-    AutoAggro = false,
+    FindEvidence = true,
+    AutoEvidence = true,
+    AutoAggro = true,
 }
 Client = {
     Noclip = true,
