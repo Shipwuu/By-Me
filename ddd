@@ -96,10 +96,10 @@ Client = {
     Fullbright = false
 }
 ESP = {
-    Enabled = false,
-    Ghost = false,
+    Enabled = true,
+    Ghost = true,
     Player = false,
-    Items = false,
+    Items = true,
     
     Color = Color3.fromRGB(192, 57, 43),
     Type = '1',
