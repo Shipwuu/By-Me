@@ -38,7 +38,7 @@ local Library = engine:init()
 -- Documentation: https://pastebin.com/raw/H3ARQ6ZE
 
 --< Window >--
-local Windows = {'Main', 'Client', 'Information', 'Teleports'}
+local Windows = {'Main', 'Client', 'ESP', 'Credits', 'Information', 'Teleports'}
 local TempWindows = {}
 local XPosition,YPosition = 0
 local XSize,YSize = 200, 150
