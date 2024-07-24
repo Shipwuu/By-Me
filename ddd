@@ -90,10 +90,10 @@ Main = {
     AutoAggro = false,
 }
 Client = {
-    Noclip = false,
+    Noclip = true,
     Speedhack = false,
     Nofog = false,
-    Fullbright = false
+    Fullbright = true
 }
 ESP = {
     Enabled = true,
