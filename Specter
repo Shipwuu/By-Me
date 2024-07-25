@@ -100,6 +100,18 @@ startButton.BackgroundTransparency = 0.7  -- Adjust transparency as desired
 startButton.TextStrokeTransparency = 0
 startButton.Text = "Start"
 
+-- Function to fire the "Start" server event
+startButton.MouseButton1Click:Connect(function()
+    game:GetService("ReplicatedStorage"):WaitForChild("Start"):FireServer()
+end)
+
+RunService.RenderStepped:Connect(function()
+    local sanity = LocalPlayer.Data:FindFirstChild("Sanity")
+    if sanity then
+        sanityLabel.Text = "Sanity: " .. tostring(math.floor(sanity.Value))
+    end
+end)
+
 -- Functions and buttons
 local function createBillboardGui(adornedPart, text, color)
     local billboardGui = Instance.new("BillboardGui")
@@ -141,21 +153,6 @@ local function addBillboardGuiToPart(name, text, color)
     end)
 end
 
-    -- Check existing parts
-    for _, part in pairs(workspace:GetChildren()) do
-        if part.Name == name then
-            createBillboard(part)
-        end
-    end
-
-    -- Listen for new parts
-    workspace.ChildAdded:Connect(function(child)
-        if child.Name == name then
-            createBillboard(child)
-        end
-    end)
-end
-
 -- Adding the specified billboard
 addBillboardGuiToPart("emfpart2", "Emf2", Color3.fromRGB(0, 0, 255))
 
@@ -171,7 +168,7 @@ for _, ghost in pairs(Workspace:GetChildren()) do
         boxAdornment.Adornee = ghost.HumanoidRootPart
         boxAdornment.AlwaysOnTop = true
         boxAdornment.Color3 = Color3.fromRGB(255, 0, 0)
-        boxAdornment.Size = Vector3.new(3, 3, 2)
+        boxAdornment.Size = Vector3.new(2, 2, 1)
         boxAdornment.Transparency = 0.5
         boxAdornment.ZIndex = 2
         boxAdornment.Parent = ghost
