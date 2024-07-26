@@ -1,297 +1,54 @@
 -- Define necessary services and variables
 local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local workspace = game:GetService("Workspace")
-local Main = Main or {}
-local Items = Items or nil
-local Evidence = Evidence or {}
-local GhostRoom = GhostRoom or {}
 
--- Create the UI
 local player = Players.LocalPlayer
-local playerGui = player:WaitForChild("PlayerGui")
+local character = player.Character or player.CharacterAdded:Wait()
+local HRoot = character:WaitForChild("HumanoidRootPart")
 
-local screenGui = Instance.new("ScreenGui", playerGui)
-screenGui.Name = "EvidenceScreenGui"
-
-local evidenceFrame = Instance.new("Frame", screenGui)
-evidenceFrame.Name = "EvidenceFrame"
-evidenceFrame.Size = UDim2.new(0, 200, 0, 150)
-evidenceFrame.Position = UDim2.new(1, -210, 1, -160)
-evidenceFrame.BackgroundColor3 = Color3.new(0.1, 0.1, 0.1)
-evidenceFrame.BackgroundTransparency = 0.5
-evidenceFrame.BorderSizePixel = 2
-
-local evidenceTitle = Instance.new("TextLabel", evidenceFrame)
-evidenceTitle.Name = "Title"
-evidenceTitle.Size = UDim2.new(1, 0, 0, 30)
-evidenceTitle.Position = UDim2.new(0, 0, 0, 0)
-evidenceTitle.BackgroundColor3 = Color3.new(0.2, 0.2, 0.2)
-evidenceTitle.BorderSizePixel = 2
-evidenceTitle.Text = "Detected Evidence"
-evidenceTitle.TextColor3 = Color3.new(1, 1, 1)
-evidenceTitle.Font = Enum.Font.SourceSans
-evidenceTitle.TextSize = 18
-
-local evidenceList = Instance.new("Frame", evidenceFrame)
-evidenceList.Name = "EvidenceList"
-evidenceList.Size = UDim2.new(1, 0, 1, -30)
-evidenceList.Position = UDim2.new(0, 0, 0, 30)
-evidenceList.BackgroundTransparency = 1
-
-local evidenceLabels = {}
-
-local function updateEvidenceUI()
-    for _, label in pairs(evidenceLabels) do
-        label:Destroy()
-    end
-    evidenceLabels = {}
-
-    local yOffset = 0
-    for evidence, detected in pairs(Evidence) do
-        print("Updating UI for evidence:", evidence, detected) -- Add debug log
-        if detected then
-            local label = Instance.new("TextLabel", evidenceList)
-            label.Size = UDim2.new(1, 0, 0, 20)
-            label.Position = UDim2.new(0, 0, 0, yOffset)
-            label.BackgroundTransparency = 1
-            label.Text = evidence
-            label.TextColor3 = Color3.new(1, 1, 1)
-            label.Font = Enum.Font.SourceSans
-            label.TextSize = 16
-            table.insert(evidenceLabels, label)
-            yOffset = yOffset + 20
-        end
-    end
-end
+-- Variables
+local House = workspace:FindFirstChild('House')
+local OldPos = HRoot.CFrame
 
 -- Function to find evidence
-function findEvidence()
-    Main.FindEvidence = true
-
-    while Main.FindEvidence do
-        local EMF, Book, SB, TM
-
-        EMF = (function()
-            local Folder = Items or (function()
-                for _, v in pairs(workspace:GetChildren()) do
-                    if v:IsA('Model') and Players:GetPlayerFromCharacter(v) and v:FindFirstChild('EMF Reader') then
+local function findEvidence()
+    for i = 1, 2 do
+        local fire = fireproximityprompt or ReplicatedStorage:FindFirstChild("ReportEvidence")
+        
+        local e = House:FindFirstChild('Bone') or (function()
+            local Waters = House:FindFirstChild('Waters')
+            if Waters then
+                for _, v in pairs(Waters:GetChildren()) do
+                    if v:IsA('Part') and v.Transparency < 1 then
                         return v
                     end
                 end
-            end)()
-            return Folder and (Folder:FindFirstChild('EMF Reader') or (Folder:FindFirstChildOfClass('Model') and Folder:FindFirstChildOfClass('Model').Name == 'EMF Reader' and Folder:FindFirstChildOfClass('Model')))
+            end
         end)()
 
-        Book = (function()
-            local Folder = Items or (function()
-                for _, v in pairs(workspace:GetChildren()) do
-                    if v:IsA('Model') and Players:GetPlayerFromCharacter(v) and v:FindFirstChild('Book') then
-                        return v
-                    end
-                end
-            end)()
-            return Folder and (Folder:FindFirstChild('Book') or (Folder:FindFirstChildOfClass('Model') and Folder:FindFirstChildOfClass('Model').Name == 'Book' and Folder:FindFirstChildOfClass('Model')))
-        end)()
-
-        SB = (function()
-            local Folder = Items or (function()
-                for _, v in pairs(workspace:GetChildren()) do
-                    if v:IsA('Model') and Players:GetPlayerFromCharacter(v) and v:FindFirstChild('Spirit Box') then
-                        return v
-                    end
-                end
-            end)()
-            return Folder and (Folder:FindFirstChild('Spirit Box') or (Folder:FindFirstChildOfClass('Model') and Folder:FindFirstChildOfClass('Model').Name == 'Spirit Box' and Folder:FindFirstChildOfClass('Model')))
-        end)()
-
-        TM = (function()
-            local Folder = Items or (function()
-                for _, v in pairs(workspace:GetChildren()) do
-                    if v:IsA('Model') and Players:GetPlayerFromCharacter(v) and v:FindFirstChild('Thermometer') then
-                        return v
-                    end
-                end
-            end)()
-            return Folder and (Folder:FindFirstChild('Thermometer') or (Folder:FindFirstChildOfClass('Model') and Folder:FindFirstChildOfClass('Model').Name == 'Thermometer' and Folder:FindFirstChildOfClass('Model')))
-        end)()
-
-        local function checkEMF(EMF)
-            local s = false
-            if EMF and s == false then 
-                local L = {}
-                for I = 1, 5 do table.insert(L, 'L' .. tostring(I)) end
-                local t_s = {}
-                for I, V in pairs(L) do
-                    L[I] = EMF:FindFirstChild(V)
-                    if typeof(L[I]) == 'Instance' then
-                        local c = L[I].BrickColor ~= BrickColor.new('Smoky grey')
-                        if c and I == 5 then
-                            s = true
-                            break
+        if e then
+            repeat
+                pcall(function()
+                    HRoot.CFrame = e.CFrame
+                end)
+                wait(0.2)
+                pcall(function()
+                    if type(fire) == 'function' then
+                        local proximity = e:FindFirstChildOfClass('ProximityPrompt') or e:FindFirstChild('ProximityPrompt')
+                        if proximity then
+                            fire(proximity)
                         end
-
-                        if not c then 
-                            table.insert(t_s, L[I].BrickColor)
-                        end
+                    elseif fire and fire:IsA("RemoteEvent") then
+                        fire:FireServer(e)
                     end
-                end
-                s = (s == true) or (#t_s <= 5 and t_s)
-            elseif not EMF and s == false then
-                local a = workspace:FindFirstChild('emfpart5') or workspace:WaitForChild('emfpart5')
-                if a then
-                    s = true
-                end
-            end
-
-            Evidence['EMF'] = s
-            print('EMF Evidence:', s)
-            updateEvidenceUI()
-            return s
+                end)
+            until not e.Parent or not e or e.Transparency == 1
         end
-
-        local function checkSB(SB)
-            local s = false
-            if SB and s == false then
-                local child = SB:FindFirstChild('Hand') and SB.Hand:GetChildren()
-                for _, V in pairs(child) do
-                    if V.ClassName == 'Sound' and V.Playing == true then
-                        s = true
-                        break
-                    end
-                end
-            end
-            Evidence['SpiritBox'] = s
-            print('Spirit Box Evidence:', s)
-            updateEvidenceUI()
-            return s
-        end
-
-        local function checkBook(Book)
-            local s = false
-            if Book and s == false then
-                local t = {}
-                for I = 1, 2 do table.insert(t, 'Page' .. tostring(I)) end
-                for I, V in pairs(t) do
-                    t[I] = Book:FindFirstChild(V)
-                    if typeof(t[I]) == 'Instance' then
-                        local b = t[I]:FindFirstChildOfClass('Decal')
-                        local c = b.Transparency == 0
-                        if c then
-                            s = true
-                            break
-                        end
-                    end
-                end
-            end
-            Evidence['Writing'] = s
-            print('Writing Evidence:', s)
-            updateEvidenceUI()
-            return s
-        end
-
-        local function checkFingerprints()
-            local s = false
-            if #GhostRoom > 0 and s == false then
-                local a = GhostRoom[1].Parent
-                if a:IsA('Folder') then
-                    local b = a:FindFirstChild('PrintPart') and a.PrintPart:FindFirstChild('SurfaceGui') and (a.PrintPart.SurfaceGui.Enabled == true)
-                    if b then
-                        s = true
-                    else
-                        for _, V in pairs(a:FindFirstChild('Windows'):GetChildren()) do
-                            if V:IsA('Part') and V:FindFirstChild('PrintPart') then
-                                local c = a.PrintPart:FindFirstChild('SurfaceGui') and (a.PrintPart.SurfaceGui.Enabled == true)
-                                if c then
-                                    s = true
-                                    break
-                                end
-                            end
-                        end
-                    end
-
-                end
-            end
-            Evidence['Fingerprints'] = s
-            print('Fingerprints Evidence:', s)
-            updateEvidenceUI()
-            return s
-        end
-
-        local function checkOrbs()
-            local s = false
-            if s == false then
-                local a = workspace:FindFirstChild('Orb') or workspace:WaitForChild('Orb')
-                if a then
-                    s = true
-                end
-                wait(.5)
-            end
-            Evidence['Orbs'] = s
-            print('Orbs Evidence:', s)
-            updateEvidenceUI()
-            return s
-        end
-
-        local function checkTM(TM)
-            local s = false
-            if TM and s == false then
-                local a = TM:FindFirstChild('Temp') and (TM.Temp:FindFirstChild('SurfaceGui') and TM.Temp.SurfaceGui.Frame.TextLabel.Text)
-                local b = tonumber(a:match('%d+'))
-                local c = (b <= 0)
-                if c then
-                    s = true
-                end
-            elseif not TM and s == false then
-                --// cold breath
-            end
-            Evidence['Freezing'] = s
-            print('Freezing Temp Evidence:', s)
-            updateEvidenceUI()
-            return s
-        end
-
-        if (EMF or Book or SB or TM) then
-            if #Evidence <= 3 then
-                if not Evidence['EMF'] then
-                    coroutine.wrap(checkEMF)(EMF)
-                else
-                    print('EMF 5', true)
-                end
-                if not Evidence['SpiritBox'] then
-                    coroutine.wrap(checkSB)(SB)
-                end
-                if not Evidence['Writing'] then
-                    coroutine.wrap(checkBook)(Book)
-                else
-                    print('Writing', true)
-                end
-                if not Evidence['Fingerprints'] then
-                    coroutine.wrap(checkFingerprints)()
-                    print('Fingerprints', true)
-                end
-                if not Evidence['Orbs'] then
-                    coroutine.wrap(checkOrbs)()
-                else
-                    print('Orb', true)
-                end
-                if not Evidence['Freezing'] then
-                    coroutine.wrap(checkTM)(TM)
-                else
-                    print('Freezing Temp', true)
-                end
-            else
-                print('Step [3] are false, go on Step [4]')
-                local INDEX = 1
-                for K, V in pairs(Evidence) do 
-                    if INDEX > 3 then 
-                        getgenv().Evidence[INDEX] = nil 
-                    end 
-                    INDEX = INDEX + 1
-                end
-            end
-        end
-        wait(.2)
     end
+
+    -- Return to original position
+    HRoot.CFrame = OldPos
 end
 
 -- Execute the function
