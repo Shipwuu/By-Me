@@ -27,7 +27,8 @@ local function createOrUpdateChecklist()
     -- Create new checklist frame
     checklistFrame = Instance.new("Frame")
     checklistFrame.Size = UDim2.new(0, 150, 0, 30)  -- Small width and height
-    checklistFrame.Position = UDim2.new(1, -50, 1, -300)  -- Bottom right position with offset
+    checklistFrame.Position = UDim2.new(0.5, -75, 0, 10)  -- Centered horizontally, near the top
+    checklistFrame.AnchorPoint = Vector2.new(0.5, 0)  -- Center the frame horizontally
     checklistFrame.BackgroundTransparency = 0.5
     checklistFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
     checklistFrame.BorderSizePixel = 2
