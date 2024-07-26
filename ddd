@@ -6,6 +6,63 @@ local Items = Items or nil
 local Evidence = Evidence or {}
 local GhostRoom = GhostRoom or {}
 
+-- Create the UI
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+local screenGui = Instance.new("ScreenGui", playerGui)
+screenGui.Name = "EvidenceScreenGui"
+
+local evidenceFrame = Instance.new("Frame", screenGui)
+evidenceFrame.Name = "EvidenceFrame"
+evidenceFrame.Size = UDim2.new(0, 200, 0, 150)
+evidenceFrame.Position = UDim2.new(1, -210, 1, -160)
+evidenceFrame.BackgroundColor3 = Color3.new(0.1, 0.1, 0.1)
+evidenceFrame.BackgroundTransparency = 0.5
+evidenceFrame.BorderSizePixel = 2
+
+local evidenceTitle = Instance.new("TextLabel", evidenceFrame)
+evidenceTitle.Name = "Title"
+evidenceTitle.Size = UDim2.new(1, 0, 0, 30)
+evidenceTitle.Position = UDim2.new(0, 0, 0, 0)
+evidenceTitle.BackgroundColor3 = Color3.new(0.2, 0.2, 0.2)
+evidenceTitle.BorderSizePixel = 2
+evidenceTitle.Text = "Detected Evidence"
+evidenceTitle.TextColor3 = Color3.new(1, 1, 1)
+evidenceTitle.Font = Enum.Font.SourceSans
+evidenceTitle.TextSize = 18
+
+local evidenceList = Instance.new("Frame", evidenceFrame)
+evidenceList.Name = "EvidenceList"
+evidenceList.Size = UDim2.new(1, 0, 1, -30)
+evidenceList.Position = UDim2.new(0, 0, 0, 30)
+evidenceList.BackgroundTransparency = 1
+
+local evidenceLabels = {}
+
+local function updateEvidenceUI()
+    for _, label in pairs(evidenceLabels) do
+        label:Destroy()
+    end
+    evidenceLabels = {}
+
+    local yOffset = 0
+    for evidence, detected in pairs(Evidence) do
+        if detected then
+            local label = Instance.new("TextLabel", evidenceList)
+            label.Size = UDim2.new(1, 0, 0, 20)
+            label.Position = UDim2.new(0, 0, 0, yOffset)
+            label.BackgroundTransparency = 1
+            label.Text = evidence
+            label.TextColor3 = Color3.new(1, 1, 1)
+            label.Font = Enum.Font.SourceSans
+            label.TextSize = 16
+            table.insert(evidenceLabels, label)
+            yOffset = yOffset + 20
+        end
+    end
+end
+
 -- Function to find evidence
 function findEvidence()
     Main.FindEvidence = true
@@ -86,6 +143,7 @@ function findEvidence()
             end
 
             Evidence['EMF'] = s
+            updateEvidenceUI()
             return s
         end
 
@@ -101,6 +159,7 @@ function findEvidence()
                 end
             end
             Evidence['SpiritBox'] = s
+            updateEvidenceUI()
             return s
         end
 
@@ -122,6 +181,7 @@ function findEvidence()
                 end
             end
             Evidence['Writing'] = s
+            updateEvidenceUI()
             return s
         end
 
@@ -148,6 +208,7 @@ function findEvidence()
                 end
             end
             Evidence['Fingerprints'] = s
+            updateEvidenceUI()
             return s
         end
 
@@ -161,6 +222,7 @@ function findEvidence()
                 wait(.5)
             end
             Evidence['Orbs'] = s
+            updateEvidenceUI()
             return s
         end
 
@@ -177,6 +239,7 @@ function findEvidence()
                 --// cold breath
             end
             Evidence['Freezing'] = s
+            updateEvidenceUI()
             return s
         end
 
