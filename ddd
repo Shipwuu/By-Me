@@ -1,5 +1,224 @@
-local args = {
-    [1] = true
-}
+function findEvidence()
+    Main = Main or {}
+    Main.FindEvidence = true
 
-game:GetService("ReplicatedStorage").PhantomDrain:FireServer(unpack(args))
+    while Main.FindEvidence do
+        local EMF, Book, SB, TM
+
+        EMF = (function()
+            local Folder = Items or (function()
+                for _, v in pairs(workspace:GetChildren()) do
+                    if v:IsA('Model') and Players:GetPlayerFromCharacter(v) and v:FindFirstChild('EMF Reader') then
+                        return v
+                    end
+                end
+            end)()
+
+            return Folder:FindFirstChild('EMF Reader') or (Folder:FindFirstChildOfClass('Model') and Folder:FindFirstChildOfClass('Model').Name == 'EMF Reader' and Folder:FindFirstChildOfClass('Model'))
+        end)()
+
+        Book = (function()
+            local Folder = Items or (function()
+                for _, v in pairs(workspace:GetChildren()) do
+                    if v:IsA('Model') and Players:GetPlayerFromCharacter(v) and v:FindFirstChild('Book') then
+                        return v
+                    end
+                end
+            end)()
+
+            return Folder:FindFirstChild('Book') or (Folder:FindFirstChildOfClass('Model') and Folder:FindFirstChildOfClass('Model').Name == 'Book' and Folder:FindFirstChildOfClass('Model'))
+        end)()
+
+        SB = (function()
+            local Folder = Items or (function()
+                for _, v in pairs(workspace:GetChildren()) do
+                    if v:IsA('Model') and Players:GetPlayerFromCharacter(v) and v:FindFirstChild('Spirit Box') then
+                        return v
+                    end
+                end
+            end)()
+
+            return Folder:FindFirstChild('Spirit Box') or (Folder:FindFirstChildOfClass('Model') and Folder:FindFirstChildOfClass('Model').Name == 'Spirit Box' and Folder:FindFirstChildOfClass('Model'))
+        end)()
+
+        TM = (function()
+            local Folder = Items or (function()
+                for _, v in pairs(workspace:GetChildren()) do
+                    if v:IsA('Model') and Players:GetPlayerFromCharacter(v) and v:FindFirstChild('Thermometer') then
+                        return v
+                    end
+                end
+            end)()
+
+            return Folder:FindFirstChild('Thermometer') or (Folder:FindFirstChildOfClass('Model') and Folder:FindFirstChildOfClass('Model').Name == 'Thermometer' and Folder:FindFirstChildOfClass('Model'))
+        end)()
+
+        local function checkEMF(EMF)
+            local s = false
+            if EMF and s == false then 
+                local L = {}
+                for I = 1, 5 do table.insert(L, 'L' .. tostring(I)) end
+                local t_s = {}
+                for I, V in pairs(L) do
+                    L[I] = EMF:FindFirstChild(V)
+                    if typeof(L[I]) == 'Instance' then
+                        local c = L[I].BrickColor ~= BrickColor.new('Smoky grey')
+                        if c and I == 5 then
+                            s = true
+                            break
+                        end
+
+                        if not c then 
+                            table.insert(t_s, L[I].BrickColor)
+                        end
+                    end
+                end
+                s = (s == true) or (#t_s <= 5 and t_s)
+            elseif not EMF and s == false then
+                local a = workspace:FindFirstChild('emfpart5') or workspace:WaitForChild('emfpart5')
+                if a then
+                    s = true
+                end
+            end
+
+            Evidence['EMF'] = s
+            return s
+        end
+
+        local function checkSB(SB)
+            local s = false
+            if SB and s == false then
+                local child = SB:FindFirstChild('Hand') and SB.Hand:GetChildren()
+                for _, V in pairs(child) do
+                    if V.ClassName == 'Sound' and V.Playing == true then
+                        s = true
+                        break
+                    end
+                end
+            end
+            Evidence['SpiritBox'] = s
+            return s
+        end
+
+        local function checkBook(Book)
+            local s = false
+            if Book and s == false then
+                local t = {}
+                for I = 1, 2 do table.insert(t, 'Page' .. tostring(I)) end
+                for I, V in pairs(t) do
+                    t[I] = Book:FindFirstChild(V)
+                    if typeof(t[I]) == 'Instance' then
+                        local b = t[I]:FindFirstChildOfClass('Decal')
+                        local c = b.Transparency == 0
+                        if c then
+                            s = true
+                            break
+                        end
+                    end
+                end
+            end
+            Evidence['Writing'] = s
+            return s
+        end
+
+        local function checkFingerprints()
+            local s = false
+            if #GhostRoom > 0 and s == false then
+                local a = GhostRoom[1].Parent
+                if a:IsA('Folder') then
+                    local b = a:FindFirstChild('PrintPart') and a.PrintPart:FindFirstChild('SurfaceGui') and (a.PrintPart.SurfaceGui.Enabled == true)
+                    if b then
+                        s = true
+                    else
+                        for _, V in pairs(a:FindFirstChild('Windows'):GetChildren()) do
+                            if V:IsA('Part') and V:FindFirstChild('PrintPart') then
+                                local c = a.PrintPart:FindFirstChild('SurfaceGui') and (a.PrintPart.SurfaceGui.Enabled == true)
+                                if c then
+                                    s = true
+                                    break
+                                end
+                            end
+                        end
+                    end
+
+                end
+            end
+            Evidence['Fingerprints'] = s
+            return s
+        end
+
+        local function checkOrbs()
+            local s = false
+            if s == false then
+                local a = workspace:FindFirstChild('Orb') or workspace:WaitForChild('Orb')
+                if a then
+                    s = true
+                end
+                wait(.5)
+            end
+            Evidence['Orbs'] = s
+            return s
+        end
+
+        local function checkTM(TM)
+            local s = false
+            if TM and s == false then
+                local a = TM:FindFirstChild('Temp') and (TM.Temp:FindFirstChild('SurfaceGui') and TM.Temp.SurfaceGui.Frame.TextLabel.Text)
+                local b = tonumber(a:match('%d+'))
+                local c = (b <= 0)
+                if c then
+                    s = true
+                end
+            elseif not TM and s == false then
+                --// cold breath
+            end
+            Evidence['Freezing'] = s
+            return s
+        end
+
+        if (EMF or Book or SB or TM) then
+            if #Evidence <= 3 then
+                if not Evidence['EMF'] then
+                    coroutine.wrap(checkEMF)(EMF)
+                else
+                    print('EMF 5', true)
+                end
+                if not Evidence['SpiritBox'] then
+                    coroutine.wrap(checkSB)(SB)
+                end
+                if not Evidence['Writing'] then
+                    coroutine.wrap(checkBook)(Book)
+                else
+                    print('Writing', true)
+                end
+                if not Evidence['Fingerprints'] then
+                    coroutine.wrap(checkFingerprints)()
+                    print('Fingerprints', true)
+                end
+                if not Evidence['Orbs'] then
+                    coroutine.wrap(checkOrbs)()
+                else
+                    print('Orb', true)
+                end
+                if not Evidence['Freezing'] then
+                    coroutine.wrap(checkTM)(TM)
+                else
+                    print('Freezing Temp', true)
+                end
+            else
+                print('Step [3] are false, go on Step [4]')
+                local INDEX = 1
+                for K, V in pairs(Evidence) do 
+                    if INDEX > 3 then 
+                        getgenv().Evidence[INDEX] = nil 
+                    end 
+                    INDEX = INDEX + 1
+                end
+            end
+        end
+        wait(.2)
+    end
+end
+
+-- Execute the function
+findEvidence()
