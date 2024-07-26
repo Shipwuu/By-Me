@@ -105,6 +105,30 @@ startButton.MouseButton1Click:Connect(function()
     game:GetService("ReplicatedStorage"):WaitForChild("Start"):FireServer()
 end)
 
+local startButton = Instance.new("TextButton")
+startButton.Name = "StartButton"
+startButton.Parent = sanityGui  -- Assuming sanityGui is the parent GUI element
+startButton.AnchorPoint = Vector2.new(0, 0.5)
+startButton.Position = UDim2.new(1, -310, 0, 104)  -- Adjust X and Y positions as needed
+startButton.Size = UDim2.new(0, 140, 0, 30)
+startButton.Font = Enum.Font.SourceSansBold
+startButton.TextSize = 18
+startButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+startButton.BackgroundColor3 = Color3.fromRGB(0, 128, 255)
+startButton.BackgroundTransparency = 0.7  -- Adjust transparency as desired
+startButton.TextStrokeTransparency = 0
+startButton.Text = "Drain Sanity"
+
+-- Function to fire the "Start" server event
+startButton.MouseButton1Click:Connect(function()
+
+    local args = {
+    [1] = true
+}
+
+game:GetService("ReplicatedStorage").PhantomDrain:FireServer(unpack(args))
+end)
+
 RunService.RenderStepped:Connect(function()
     local sanity = LocalPlayer.Data:FindFirstChild("Sanity")
     if sanity then
