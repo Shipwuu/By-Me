@@ -1,0 +1,55 @@
+-- Define necessary services and variables
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local workspace = game:GetService("Workspace")
+
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local HRoot = character:WaitForChild("HumanoidRootPart")
+
+-- Variables
+local House = workspace:FindFirstChild('House')
+local OldPos = HRoot.CFrame
+
+-- Function to find evidence
+local function findEvidence()
+    for i = 1, 2 do
+        local fire = fireproximityprompt or ReplicatedStorage:FindFirstChild("ReportEvidence")
+        
+        local e = House:FindFirstChild('Bone') or (function()
+            local Waters = House:FindFirstChild('Waters')
+            if Waters then
+                for _, v in pairs(Waters:GetChildren()) do
+                    if v:IsA('Part') and v.Transparency < 1 then
+                        return v
+                    end
+                end
+            end
+        end)()
+
+        if e then
+            repeat
+                pcall(function()
+                    HRoot.CFrame = e.CFrame
+                end)
+                wait(0.2)
+                pcall(function()
+                    if type(fire) == 'function' then
+                        local proximity = e:FindFirstChildOfClass('ProximityPrompt') or e:FindFirstChild('ProximityPrompt')
+                        if proximity then
+                            fire(proximity)
+                        end
+                    elseif fire and fire:IsA("RemoteEvent") then
+                        fire:FireServer(e)
+                    end
+                end)
+            until not e.Parent or not e or e.Transparency == 1
+        end
+    end
+
+    -- Return to original position
+    HRoot.CFrame = OldPos
+end
+
+-- Execute the function
+findEvidence()
