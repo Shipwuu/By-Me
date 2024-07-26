@@ -1,7 +1,6 @@
 -- Services
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
-local RunService = game:GetService("RunService")
 
 -- Variables
 local client = Players.LocalPlayer
@@ -9,136 +8,80 @@ local Items = Workspace:FindFirstChild("Items")
 local Rooms = Workspace:FindFirstChild("House") and Workspace.House:FindFirstChild("Rooms")
 local GhostRoom = {}
 local IsReady = false
-local hasTeleported = false
+local hasTeleported = false  -- Flag to track if teleportation has already occurred
 
--- Function to log messages
+-- Functions
 local function log(message)
     print("[SCRIPT]: " .. message)
 end
 
--- Create or update GUI frame with buttons
-local function createTeleportUI()
-    -- Create a ScreenGui if it doesn't exist
-    local screenGui = client.PlayerGui:FindFirstChild("TeleportUI") or Instance.new("ScreenGui", client.PlayerGui)
-    screenGui.Name = "TeleportUI"
+-- Function to create or update GUI for teleport buttons
+local function createTeleportFrame()
+    -- Create new frame
+    local teleportFrame = Instance.new("ScrollingFrame")
+    teleportFrame.Size = UDim2.new(0, 200, 0, 200)  -- Adjusted size
+    teleportFrame.Position = UDim2.new(1, -210, 1, -210)  -- Bottom-right position with offset
+    teleportFrame.BackgroundTransparency = 0.5
+    teleportFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    teleportFrame.BorderSizePixel = 2
+    teleportFrame.ScrollBarThickness = 8  -- Add scroll bar for navigation
+    teleportFrame.Parent = game.Players.LocalPlayer.PlayerGui.ScreenGui
 
-    -- Create a ScrollingFrame for buttons
-    local scrollingFrame = Instance.new("ScrollingFrame")
-    scrollingFrame.Name = "TeleportScrollingFrame"
-    scrollingFrame.Size = UDim2.new(0, 200, 0, 300)  -- Smaller size for the scrolling frame
-    scrollingFrame.Position = UDim2.new(1, -210, 1, -320)  -- Bottom right position with offset
-    scrollingFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)  -- Background color
-    scrollingFrame.BackgroundTransparency = 0.5  -- Background transparency
-    scrollingFrame.BorderSizePixel = 2
-    scrollingFrame.ScrollBarThickness = 10
-    scrollingFrame.Parent = screenGui
+    -- Create UIListLayout for buttons
+    local uiListLayout = Instance.new("UIListLayout")
+    uiListLayout.FillDirection = Enum.FillDirection.Vertical
+    uiListLayout.Padding = UDim.new(0, 5)  -- Padding between buttons
+    uiListLayout.Parent = teleportFrame
 
-    -- Create a UIListLayout for the buttons
-    local listLayout = Instance.new("UIListLayout")
-    listLayout.Padding = UDim.new(0, 5)
-    listLayout.Parent = scrollingFrame
+    return teleportFrame
+end
 
-    -- Create "Van" Button
-    local vanButton = Instance.new("TextButton")
-    vanButton.Name = "VanButton"
-    vanButton.Size = UDim2.new(1, -10, 0, 50)  -- Size of the button
-    vanButton.Position = UDim2.new(0, 5, 0, 5)  -- Position with padding
-    vanButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)  -- Background color
-    vanButton.TextColor3 = Color3.fromRGB(255, 255, 255)  -- Text color
-    vanButton.Text = "Van"
-    vanButton.Parent = scrollingFrame
+local function addButtonToFrame(frame, name, callback)
+    local button = Instance.new("TextButton")
+    button.Size = UDim2.new(1, -10, 0, 30)  -- Adjusted size
+    button.Position = UDim2.new(0, 5, 0, 5)  -- Position with padding
+    button.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    button.TextColor3 = Color3.fromRGB(255, 255, 255)
+    button.Text = name
+    button.Font = Enum.Font.SourceSans
+    button.TextSize = 14
+    button.Parent = frame
 
-    -- Create Room Buttons
+    button.MouseButton1Click:Connect(callback)
+end
+
+-- Initialize the teleport buttons
+function initTeleport()
+    local teleportFrame = createTeleportFrame()
+    
+    -- Van Button
+    addButtonToFrame(teleportFrame, "Van", function()
+        local VanSpawn = workspace:FindFirstChild('House') and workspace.House:FindFirstChild('VanSpawn')
+        local Humanoid, HRoot = (client.Character and client.Character:FindFirstChildOfClass('Humanoid')), (client.Character and (client.Character.PrimaryPart or client.Character:FindFirstChild('HumanoidRootPart')))
+        if not client.Character:FindFirstChildOfClass('Humanoid').Sit then client.Character.Humanoid.Sit = true end
+        if VanSpawn then
+            HRoot.CFrame = VanSpawn.CFrame - Vector3.new(0, 4, 0)
+        end
+    end)
+
+    -- Room Buttons
+    local index = 1
     for _, room in pairs(Rooms:GetChildren()) do
-        if room:IsA("Folder") and room:FindFirstChild("RoomName") then
-            local roomName = room.RoomName.Value
-            local roomButton = Instance.new("TextButton")
-            roomButton.Name = roomName .. "Button"
-            roomButton.Size = UDim2.new(1, -10, 0, 50)  -- Size of the button
-            roomButton.Position = UDim2.new(0, 5, 0, 5)  -- Position with padding
-            roomButton.BackgroundColor3 = Color3.fromRGB(0, 0, 255)  -- Background color
-            roomButton.TextColor3 = Color3.fromRGB(255, 255, 255)  -- Text color
-            roomButton.Text = roomName
-            roomButton.Parent = scrollingFrame
+        local RoomName = room:IsA('Folder') and room:FindFirstChild('RoomName') and room.RoomName.Value
+        if RoomName then
+            addButtonToFrame(teleportFrame, RoomName, function()
+                local Humanoid, HRoot = (client.Character and client.Character:FindFirstChildOfClass('Humanoid')), (client.Character and (client.Character.PrimaryPart or client.Character:FindFirstChild('HumanoidRootPart')))
+                if not client.Character:FindFirstChildOfClass('Humanoid').Sit then client.Character.Humanoid.Sit = true end
 
-            -- Connect room button to teleport function
-            roomButton.MouseButton1Click:Connect(function()
-                local humanoidRootPart = client.Character and (client.Character.PrimaryPart or client.Character:FindFirstChild("HumanoidRootPart"))
-                if humanoidRootPart then
-                    local hitbox = room:FindFirstChild("Hitbox")
-                    if hitbox then
-                        humanoidRootPart.CFrame = hitbox.CFrame
-                    end
+                local Hitbox = room:IsA('Folder') and room:FindFirstChild('Hitbox')
+                if Hitbox then
+                    HRoot.CFrame = Hitbox.CFrame
                 end
             end)
+            index = index + 1
         end
     end
-
-    -- Connect "Van" button to teleport function
-    vanButton.MouseButton1Click:Connect(function()
-        local vanSpawn = Workspace:FindFirstChild("House") and Workspace.House:FindFirstChild("VanSpawn")
-        local humanoidRootPart = client.Character and (client.Character.PrimaryPart or client.Character:FindFirstChild("HumanoidRootPart"))
-        if humanoidRootPart and vanSpawn then
-            humanoidRootPart.CFrame = vanSpawn.CFrame - Vector3.new(0, 4, 0)
-        end
-    end)
 end
 
--- Initialize teleport UI
-createTeleportUI()
-
--- Function to update player info
-local function updateInfo()
-    local data = client:FindFirstChild("Data") or client:WaitForChild("Data")
-    local oldGCRoom
-    RunService.Heartbeat:Connect(function()
-        local sanity = math.floor(data.Sanity.Value)
-        local outside = data.Outside.Value == true
-        local cRoom = (data.Room.Value and data.Room.Value:FindFirstChild("RoomName") and data.Room.Value.RoomName.Value) or (outside and "Outside") or "Unknown"
-
-        local function formatTime(x)
-            local minute = 60
-            return (x >= minute * 5 and tostring(5) .. "m") or (x >= minute * 4 and tostring(4) .. "m") or (x >= minute * 3 and tostring(3) .. "m") or (x >= minute * 2 and tostring(2) .. "m") or (x >= minute and tostring(1) .. "m") or (x <= minute and tostring(x) .. "s")
-        end
-
-        local peace = formatTime(game:GetService("ReplicatedStorage").Peace.Value)
-        local gCRoom = (function()
-            local ghostModel = Workspace:FindFirstChild("GhostModel") or Workspace:WaitForChild("GhostModel")
-            local primaryPart = ghostModel.PrimaryPart or ghostModel:FindFirstChild("HumanoidRootPart") or ghostModel:FindFirstChildWhichIsA("BasePart")
-            local onRoom = ""
-            for _, room in pairs(Rooms:GetChildren()) do
-                if room:IsA("Folder") and room:FindFirstChild("Hitbox") then
-                    room.Hitbox.Size = (room.Hitbox.Size + Vector3.new(0, 20, 0))
-                    if (primaryPart.Position - room.Hitbox.Position).magnitude <= 5 then
-                        onRoom = room.RoomName.Value
-                        oldGCRoom = onRoom
-                        break
-                    end
-                end
-            end
-            return (onRoom ~= "" and onRoom) or oldGCRoom or "Unknown"
-        end)()
-
-        local isHunting = (function()
-            local on = false
-            local ghostModel = Workspace:FindFirstChild("GhostModel")
-            local base = ghostModel:FindFirstChild("Base")
-            wait(0.3)
-            if base and base.Transparency == 0 then
-                on = true
-            end
-            return on
-        end)()
-
-        local gFRoom = (IsReady and #GhostRoom ~= 0 and GhostRoom[2]) or (not IsReady and #GhostRoom == 0 and "Initializing") or (IsReady == "Fail" and #GhostRoom == 0 and "Failed Initializing")
-        pcall(function() ISanity.Text = "Sanity: " .. tostring(sanity) .. "%" end)
-        pcall(function() ICRoom.Text = "Room: " .. tostring(cRoom) end)
-        pcall(function() IPeace.Text = "Peace: " .. peace end)
-        pcall(function() IGRoom.Text = "Room: " .. gCRoom end)
-        pcall(function() IGHunting.Text = "Hunting: " .. tostring(isHunting) end)
-        pcall(function() IGFRoom.Text = "Favorite Room: " .. tostring(gFRoom) end)
-    end)
-end
-
--- Initialize player info update
-coroutine.wrap(updateInfo)()
+-- Initialize GUI
+coroutine.wrap(initTeleport)()
