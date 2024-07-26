@@ -31,7 +31,14 @@ local function createTeleportFrame()
     local uiListLayout = Instance.new("UIListLayout")
     uiListLayout.FillDirection = Enum.FillDirection.Vertical
     uiListLayout.Padding = UDim.new(0, 3)  -- Smaller padding between buttons
+    uiListLayout.SortOrder = Enum.SortOrder.LayoutOrder
     uiListLayout.Parent = teleportFrame
+
+    -- Adjust canvas size
+    teleportFrame:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
+        local contentHeight = uiListLayout.AbsoluteContentSize.Y
+        teleportFrame.CanvasSize = UDim2.new(0, 0, 0, contentHeight)
+    end)
 
     return teleportFrame
 end
@@ -93,7 +100,7 @@ local function initTeleport()
 
         -- Add Van Button
         addButtonToFrame(teleportFrame, "Van", function()
-            local VanSpawn = workspace:FindFirstChild('House') and workspace.House:FindFirstChild('VanSpawn')
+            local VanSpawn = Workspace:FindFirstChild('House') and Workspace.House:FindFirstChild('VanSpawn')
             local HRoot = (client.Character and (client.Character.PrimaryPart or client.Character:FindFirstChild('HumanoidRootPart')))
             if VanSpawn then
                 HRoot.CFrame = VanSpawn.CFrame - Vector3.new(0, 4, 0)
