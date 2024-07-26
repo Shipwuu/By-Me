@@ -1,0 +1,101 @@
+-- Services
+local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
+
+-- Variables
+local client = Players.LocalPlayer
+local Items = Workspace:FindFirstChild("Items")
+local Rooms = Workspace:FindFirstChild("House") and Workspace.House:FindFirstChild("Rooms")
+local GhostRoom = {}
+local IsReady = false
+local hasTeleported = false  -- Flag to track if teleportation has already occurred
+
+-- Functions
+local function log(message)
+    print("[SCRIPT]: " .. message)
+end
+
+-- Function to create or update GUI for checklist
+local checklistFrame = nil  -- Declare the checklistFrame variable
+
+local function createOrUpdateChecklist()
+    -- Destroy existing checklist frame if it exists
+    if checklistFrame then
+        checklistFrame:Destroy()
+    end
+    
+    -- Create new checklist frame
+    checklistFrame = Instance.new("Frame")
+    checklistFrame.Size = UDim2.new(0, 150, 0, 30)  -- Small width and height
+    checklistFrame.Position = UDim2.new(1, -160, 1, -100)  -- Bottom right position with offset
+    checklistFrame.BackgroundTransparency = 0.5
+    checklistFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    checklistFrame.BorderSizePixel = 2
+    checklistFrame.Parent = game.Players.LocalPlayer.PlayerGui.ScreenGui
+    
+    -- Function to update checklist items
+    local function updateChecklist(itemName)
+        local itemLabel = Instance.new("TextLabel")
+        itemLabel.Size = UDim2.new(1, 0, 0, 15)
+        itemLabel.Position = UDim2.new(0, 5, 0, 5)  -- Adjusted position with padding
+        itemLabel.BackgroundTransparency = 1
+        itemLabel.Font = Enum.Font.SourceSans
+        itemLabel.TextSize = 14
+        itemLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+        itemLabel.TextXAlignment = Enum.TextXAlignment.Left  -- Align text to the left
+        itemLabel.Text = "✓ " .. itemName
+        itemLabel.Parent = checklistFrame
+    end
+    
+    return updateChecklist
+end
+
+-- Detect and highlight ghost rooms
+local function detectGhostRooms()
+    if hasTeleported then
+        return  -- Exit function if already teleported once
+    end
+
+    for _, room in pairs(Rooms:GetChildren()) do
+        if room:IsA("Folder") and room:FindFirstChild("Hitbox") then
+            local hitbox = room.Hitbox
+            local humanoidRootPart = client.Character and (client.Character.PrimaryPart or client.Character:FindFirstChild("HumanoidRootPart"))
+
+            if humanoidRootPart then
+                humanoidRootPart.CFrame = hitbox.CFrame * CFrame.new(1.5, -1, 0)
+                wait(0.5)  -- Adjust wait time as necessary
+
+                local emfReader = client.Character:FindFirstChild("EMF Reader") or Items:FindFirstChild("EMF Reader")
+
+                if emfReader then
+                    local mhm = (emfReader:FindFirstChild("L1") and emfReader:FindFirstChild("L2")) and (emfReader.L1.BrickColor ~= BrickColor.new("Smoky grey") and emfReader.L2.BrickColor ~= BrickColor.new("Smoky grey"))
+                    local mhm2 = not mhm and emfReader:FindFirstChild("Temp") and tonumber(emfReader.Temp.SurfaceGui.Frame.TextLabel.Text:match("(%d+.%d+)")) < 7
+
+                    if mhm or mhm2 then
+                        table.insert(GhostRoom, hitbox)
+                        log("Detected ghost room: " .. room.RoomName.Value)
+                        
+                        -- Create or update checklist item
+                        local updateChecklistItem = createOrUpdateChecklist()
+                        updateChecklistItem(room.RoomName.Value)
+                        
+                        -- Teleportation logic goes here
+                        -- Example: game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, room.PlaceInstance)
+                        
+                        hasTeleported = true  -- Set flag to true to prevent further teleportation
+                        return
+                    end
+                end
+            end
+        end
+    end
+end
+
+-- Adding billboards for specific items
+-- (Add your item billboards here)
+
+-- Continuous detection loop
+while true do
+    detectGhostRooms()
+    wait(1)  -- Adjust detection frequency as necessary
+end
