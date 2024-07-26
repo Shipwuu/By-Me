@@ -1,49 +1,134 @@
--- Define necessary services and variables
+-- Services
 local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Workspace = game:GetService("Workspace")
+
+-- Variables
 local client = Players.LocalPlayer
-local character = client.Character or client.CharacterAdded:Wait()
-local HRoot = character:WaitForChild("HumanoidRootPart")
+local Items = Workspace:FindFirstChild("Items")
+local Rooms = Workspace:FindFirstChild("House") and Workspace.House:FindFirstChild("Rooms")
+local GhostRoom = {}
+local IsReady = false
+local hasTeleported = false  -- Flag to track if teleportation has already occurred
+local checklistFrame = nil
 
--- Create a ScreenGui
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "TeleportUI"
-screenGui.Parent = client.PlayerGui
+-- Functions
+local function log(message)
+    print("[SCRIPT]: " .. message)
+end
 
--- Create a Frame
-local frame = Instance.new("Frame")
-frame.Name = "TeleportFrame"
-frame.Size = UDim2.new(0, 200, 0, 100)  -- Size of the frame
-frame.Position = UDim2.new(0.5, -100, 0.5, -50)  -- Center the frame
-frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)  -- Background color
-frame.BackgroundTransparency = 0.5  -- Background transparency
-frame.Parent = screenGui
-
--- Create a TextButton
-local button = Instance.new("TextButton")
-button.Name = "TeleportButton"
-button.Size = UDim2.new(0, 150, 0, 50)  -- Size of the button
-button.Position = UDim2.new(0.5, -75, 0.5, -25)  -- Center the button
-button.BackgroundColor3 = Color3.fromRGB(255, 0, 0)  -- Background color
-button.TextColor3 = Color3.fromRGB(255, 255, 255)  -- Text color
-button.Text = "Ghost Room"  -- Button text
-button.Parent = frame
-
--- Define function to handle teleportation
-local function teleportToGhostRoom()
-    local Hitbox = (IsReady and #GhostRoom ~= 0) and GhostRoom[1]
-    if not client:FindFirstChild("Noclip") then
-        local Humanoid = character:FindFirstChildOfClass("Humanoid")
-        if Humanoid then
-            Humanoid.Sit = true
-        end
+-- Function to create or update GUI for checklist
+local function createOrUpdateChecklist()
+    -- Destroy existing checklist frame if it exists
+    if checklistFrame then
+        checklistFrame:Destroy()
     end
-    if Hitbox and HRoot then
-        HRoot.CFrame = Hitbox.CFrame
+    
+    -- Create new checklist frame
+    checklistFrame = Instance.new("Frame")
+    checklistFrame.Size = UDim2.new(0, 150, 0, 30)  -- Small width and height
+    checklistFrame.Position = UDim2.new(1, -160, 1, -100)  -- Bottom right position with offset
+    checklistFrame.BackgroundTransparency = 0.5
+    checklistFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    checklistFrame.BorderSizePixel = 2
+    checklistFrame.Parent = client.PlayerGui:FindFirstChild("ScreenGui") or Instance.new("ScreenGui", client.PlayerGui)
+    
+    -- Function to update checklist items
+    local function updateChecklist(itemName)
+        local itemLabel = Instance.new("TextLabel")
+        itemLabel.Size = UDim2.new(1, 0, 0, 15)
+        itemLabel.Position = UDim2.new(0, 5, 0, 5)  -- Adjusted position with padding
+        itemLabel.BackgroundTransparency = 1
+        itemLabel.Font = Enum.Font.SourceSans
+        itemLabel.TextSize = 14
+        itemLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+        itemLabel.TextXAlignment = Enum.TextXAlignment.Left  -- Align text to the left
+        itemLabel.Text = "✓ " .. itemName
+        itemLabel.Parent = checklistFrame
+    end
+    
+    return updateChecklist
+end
+
+-- Function to create the teleport button
+local function createTeleportButton()
+    -- Create a ScreenGui if it doesn't exist
+    local screenGui = client.PlayerGui:FindFirstChild("TeleportUI") or Instance.new("ScreenGui", client.PlayerGui)
+    screenGui.Name = "TeleportUI"
+
+    -- Create a Frame
+    local frame = Instance.new("Frame")
+    frame.Name = "TeleportFrame"
+    frame.Size = UDim2.new(0, 200, 0, 100)  -- Size of the frame
+    frame.Position = UDim2.new(0.5, -100, 0.5, -50)  -- Center the frame
+    frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)  -- Background color
+    frame.BackgroundTransparency = 0.5  -- Background transparency
+    frame.BorderSizePixel = 2
+    frame.Parent = screenGui
+
+    -- Create a TextButton
+    local button = Instance.new("TextButton")
+    button.Name = "TeleportButton"
+    button.Size = UDim2.new(0, 150, 0, 50)  -- Size of the button
+    button.Position = UDim2.new(0.5, -75, 0.5, -25)  -- Center the button
+    button.BackgroundColor3 = Color3.fromRGB(255, 0, 0)  -- Background color
+    button.TextColor3 = Color3.fromRGB(255, 255, 255)  -- Text color
+    button.Text = "Ghost Room"  -- Button text
+    button.Parent = frame
+
+    -- Connect button click event to teleport function
+    button.MouseButton1Click:Connect(function()
+        if not hasTeleported then
+            detectGhostRooms()
+        end
+    end)
+end
+
+-- Detect and highlight ghost rooms
+local function detectGhostRooms()
+    if hasTeleported then
+        return  -- Exit function if already teleported once
+    end
+
+    for _, room in pairs(Rooms:GetChildren()) do
+        if room:IsA("Folder") and room:FindFirstChild("Hitbox") then
+            local hitbox = room.Hitbox
+            local humanoidRootPart = client.Character and (client.Character.PrimaryPart or client.Character:FindFirstChild("HumanoidRootPart"))
+
+            if humanoidRootPart then
+                humanoidRootPart.CFrame = hitbox.CFrame * CFrame.new(1.5, -1, 0)
+                wait(0.5)  -- Adjust wait time as necessary
+
+                local emfReader = client.Character:FindFirstChild("EMF Reader") or Items:FindFirstChild("EMF Reader")
+
+                if emfReader then
+                    local mhm = (emfReader:FindFirstChild("L1") and emfReader:FindFirstChild("L2")) and (emfReader.L1.BrickColor ~= BrickColor.new("Smoky grey") and emfReader.L2.BrickColor ~= BrickColor.new("Smoky grey"))
+                    local mhm2 = not mhm and emfReader:FindFirstChild("Temp") and tonumber(emfReader.Temp.SurfaceGui.Frame.TextLabel.Text:match("(%d+.%d+)")) < 7
+
+                    if mhm or mhm2 then
+                        table.insert(GhostRoom, hitbox)
+                        log("Detected ghost room: " .. room.RoomName.Value)
+                        
+                        -- Create or update checklist item
+                        local updateChecklistItem = createOrUpdateChecklist()
+                        updateChecklistItem(room.RoomName.Value)
+                        
+                        -- Teleportation logic goes here
+                        -- Example: game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, room.PlaceInstance)
+                        
+                        hasTeleported = true  -- Set flag to true to prevent further teleportation
+                        return
+                    end
+                end
+            end
+        end
     end
 end
 
--- Connect button click event to teleport function
-button.MouseButton1Click:Connect(function()
-    teleportToGhostRoom()
-end)
+-- Create UI elements
+createTeleportButton()
+
+-- Continuous detection loop
+while true do
+    detectGhostRooms()
+    wait(1)  -- Adjust detection frequency as necessary
+end
