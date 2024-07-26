@@ -15,16 +15,16 @@ local function log(message)
     print("[SCRIPT]: " .. message)
 end
 
--- Function to create or update GUI for teleport buttons
+-- Function to create or update GUI for teleport buttons and search bar
 local function createTeleportFrame()
     -- Create new frame
     local teleportFrame = Instance.new("ScrollingFrame")
-    teleportFrame.Size = UDim2.new(0, 150, 0, 150)  -- Smaller size
+    teleportFrame.Size = UDim2.new(0, 150, 0, 180)  -- Adjusted size to fit search bar and buttons
     teleportFrame.Position = UDim2.new(1, -160, 1, -160)  -- Bottom-right position with offset
     teleportFrame.BackgroundTransparency = 0.5
     teleportFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
     teleportFrame.BorderSizePixel = 2
-    teleportFrame.ScrollBarThickness = 6  -- Slightly smaller scroll bar
+    teleportFrame.ScrollBarThickness = 6
     teleportFrame.Parent = game.Players.LocalPlayer.PlayerGui.ScreenGui
 
     -- Create UIListLayout for buttons
@@ -50,35 +50,76 @@ local function addButtonToFrame(frame, name, callback)
     button.MouseButton1Click:Connect(callback)
 end
 
--- Initialize the teleport buttons
+local function addSearchBarToFrame(frame, updateButtonList)
+    -- Create search bar frame
+    local searchFrame = Instance.new("Frame")
+    searchFrame.Size = UDim2.new(1, -10, 0, 30)  -- Small size
+    searchFrame.Position = UDim2.new(0, 5, 0, 5)  -- Position with padding
+    searchFrame.BackgroundTransparency = 0.5
+    searchFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    searchFrame.BorderSizePixel = 2
+    searchFrame.Parent = frame
+
+    -- Create search bar
+    local searchBar = Instance.new("TextBox")
+    searchBar.Size = UDim2.new(1, -20, 1, -10)
+    searchBar.Position = UDim2.new(0, 10, 0, 5)
+    searchBar.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    searchBar.TextColor3 = Color3.fromRGB(255, 255, 255)
+    searchBar.PlaceholderText = "Search..."
+    searchBar.Font = Enum.Font.SourceSans
+    searchBar.TextSize = 12
+    searchBar.ClearTextOnFocus = false
+    searchBar.Parent = searchFrame
+
+    -- Update button list based on search query
+    searchBar:GetPropertyChangedSignal("Text"):Connect(function()
+        local query = searchBar.Text:lower()
+        updateButtonList(query)
+    end)
+end
+
+-- Initialize the teleport buttons and search bar
 function initTeleport()
     local teleportFrame = createTeleportFrame()
     
-    -- Van Button
-    addButtonToFrame(teleportFrame, "Van", function()
-        local VanSpawn = workspace:FindFirstChild('House') and workspace.House:FindFirstChild('VanSpawn')
-        local HRoot = (client.Character and (client.Character.PrimaryPart or client.Character:FindFirstChild('HumanoidRootPart')))
-        if VanSpawn then
-            HRoot.CFrame = VanSpawn.CFrame - Vector3.new(0, 4, 0)
+    local function updateButtonList(query)
+        -- Clear existing buttons
+        for _, child in pairs(teleportFrame:GetChildren()) do
+            if child:IsA('TextButton') then
+                child:Destroy()
+            end
         end
-    end)
 
-    -- Room Buttons
-    local index = 1
-    for _, room in pairs(Rooms:GetChildren()) do
-        local RoomName = room:IsA('Folder') and room:FindFirstChild('RoomName') and room.RoomName.Value
-        if RoomName then
-            addButtonToFrame(teleportFrame, RoomName, function()
-                local HRoot = (client.Character and (client.Character.PrimaryPart or client.Character:FindFirstChild('HumanoidRootPart')))
+        -- Add Van Button
+        addButtonToFrame(teleportFrame, "Van", function()
+            local VanSpawn = workspace:FindFirstChild('House') and workspace.House:FindFirstChild('VanSpawn')
+            local HRoot = (client.Character and (client.Character.PrimaryPart or client.Character:FindFirstChild('HumanoidRootPart')))
+            if VanSpawn then
+                HRoot.CFrame = VanSpawn.CFrame - Vector3.new(0, 4, 0)
+            end
+        end)
 
-                local Hitbox = room:IsA('Folder') and room:FindFirstChild('Hitbox')
-                if Hitbox then
-                    HRoot.CFrame = Hitbox.CFrame
-                end
-            end)
-            index = index + 1
+        -- Add Room Buttons
+        local index = 1
+        for _, room in pairs(Rooms:GetChildren()) do
+            local RoomName = room:IsA('Folder') and room:FindFirstChild('RoomName') and room.RoomName.Value
+            if RoomName and RoomName:lower():find(query) then
+                addButtonToFrame(teleportFrame, RoomName, function()
+                    local HRoot = (client.Character and (client.Character.PrimaryPart or client.Character:FindFirstChild('HumanoidRootPart')))
+
+                    local Hitbox = room:IsA('Folder') and room:FindFirstChild('Hitbox')
+                    if Hitbox then
+                        HRoot.CFrame = Hitbox.CFrame
+                    end
+                end)
+                index = index + 1
+            end
         end
     end
+
+    addSearchBarToFrame(teleportFrame, updateButtonList)
+    updateButtonList("")  -- Initialize with all buttons visible
 end
 
 -- Initialize GUI
