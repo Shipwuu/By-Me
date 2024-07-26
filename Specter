@@ -668,6 +668,35 @@ end)
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
+-- Create GUI
+local sanityGui = Instance.new("ScreenGui")
+sanityGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+
+-- Create God Button
+local godButton = Instance.new("TextButton")
+godButton.Name = "GodButton"
+godButton.Parent = sanityGui
+godButton.AnchorPoint = Vector2.new(0, 0.5)
+godButton.Position = UDim2.new(1, -439, 0, 150)  -- Positioned to the left of the startButton
+godButton.Size = UDim2.new(0, 140, 0, 30)
+godButton.Font = Enum.Font.SourceSansBold
+godButton.TextSize = 18
+godButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+godButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)  -- Red color for visibility
+godButton.BackgroundTransparency = 0.7
+godButton.TextStrokeTransparency = 0
+godButton.Text = "God Mode"
+
+-- God Button Functionality
+godButton.MouseButton1Click:Connect(function()
+     loadstring(game:HttpGet("https://raw.githubusercontent.com/Shipwuu/By-Me/main/GhostRoom"))()
+
+end)
+
+-- Services
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
 -- Variables
 local currentSpeed = 10 -- Default WalkSpeed
 local speedStep = 2 -- Increment/Decrement step for speed
