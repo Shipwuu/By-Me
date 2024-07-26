@@ -1,5 +1,13 @@
+-- Define necessary services and variables
+local Players = game:GetService("Players")
+local workspace = game:GetService("Workspace")
+local Main = Main or {}
+local Items = Items or nil
+local Evidence = Evidence or {}
+local GhostRoom = GhostRoom or {}
+
+-- Function to find evidence
 function findEvidence()
-    Main = Main or {}
     Main.FindEvidence = true
 
     while Main.FindEvidence do
@@ -13,8 +21,7 @@ function findEvidence()
                     end
                 end
             end)()
-
-            return Folder:FindFirstChild('EMF Reader') or (Folder:FindFirstChildOfClass('Model') and Folder:FindFirstChildOfClass('Model').Name == 'EMF Reader' and Folder:FindFirstChildOfClass('Model'))
+            return Folder and (Folder:FindFirstChild('EMF Reader') or (Folder:FindFirstChildOfClass('Model') and Folder:FindFirstChildOfClass('Model').Name == 'EMF Reader' and Folder:FindFirstChildOfClass('Model')))
         end)()
 
         Book = (function()
@@ -25,8 +32,7 @@ function findEvidence()
                     end
                 end
             end)()
-
-            return Folder:FindFirstChild('Book') or (Folder:FindFirstChildOfClass('Model') and Folder:FindFirstChildOfClass('Model').Name == 'Book' and Folder:FindFirstChildOfClass('Model'))
+            return Folder and (Folder:FindFirstChild('Book') or (Folder:FindFirstChildOfClass('Model') and Folder:FindFirstChildOfClass('Model').Name == 'Book' and Folder:FindFirstChildOfClass('Model')))
         end)()
 
         SB = (function()
@@ -37,8 +43,7 @@ function findEvidence()
                     end
                 end
             end)()
-
-            return Folder:FindFirstChild('Spirit Box') or (Folder:FindFirstChildOfClass('Model') and Folder:FindFirstChildOfClass('Model').Name == 'Spirit Box' and Folder:FindFirstChildOfClass('Model'))
+            return Folder and (Folder:FindFirstChild('Spirit Box') or (Folder:FindFirstChildOfClass('Model') and Folder:FindFirstChildOfClass('Model').Name == 'Spirit Box' and Folder:FindFirstChildOfClass('Model')))
         end)()
 
         TM = (function()
@@ -49,8 +54,7 @@ function findEvidence()
                     end
                 end
             end)()
-
-            return Folder:FindFirstChild('Thermometer') or (Folder:FindFirstChildOfClass('Model') and Folder:FindFirstChildOfClass('Model').Name == 'Thermometer' and Folder:FindFirstChildOfClass('Model'))
+            return Folder and (Folder:FindFirstChild('Thermometer') or (Folder:FindFirstChildOfClass('Model') and Folder:FindFirstChildOfClass('Model').Name == 'Thermometer' and Folder:FindFirstChildOfClass('Model')))
         end)()
 
         local function checkEMF(EMF)
