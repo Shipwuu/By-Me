@@ -1,0 +1,69 @@
+-- Services
+local Players = game:GetService("Players")
+
+-- Variables
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+local screenGui = playerGui:FindFirstChildOfClass("ScreenGui") or Instance.new("ScreenGui", playerGui)
+
+-- Create frame
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 150, 0, 70)  -- Adjusted size for frame
+frame.Position = UDim2.new(1, -160, 0, 10)  -- Top right position with offset
+frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+frame.BackgroundTransparency = 0.5
+frame.BorderSizePixel = 2
+frame.Parent = screenGui
+
+-- Create button
+local button = Instance.new("TextButton")
+button.Size = UDim2.new(1, -10, 0, 30)  -- Adjusted size within the frame
+button.Position = UDim2.new(0, 5, 0, 5)  -- Small padding
+button.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+button.BackgroundTransparency = 0.7
+button.BorderSizePixel = 1
+button.Text = "Aggro Ghost Hunting"
+button.TextColor3 = Color3.fromRGB(255, 255, 255)
+button.Font = Enum.Font.SourceSans
+button.TextSize = 14
+button.Parent = frame
+
+-- Create label for warning
+local warningLabel = Instance.new("TextLabel")
+warningLabel.Size = UDim2.new(1, -10, 0, 30)  -- Size to fit the frame
+warningLabel.Position = UDim2.new(0, 5, 0, 40)  -- Position below the button
+warningLabel.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+warningLabel.BackgroundTransparency = 0.7
+warningLabel.BorderSizePixel = 1
+warningLabel.Text = "Hunt"
+warningLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+warningLabel.Font = Enum.Font.SourceSans
+warningLabel.TextSize = 14
+warningLabel.Visible = false  -- Hidden by default
+warningLabel.Parent = frame
+
+-- Toggle state variable
+local AutoAggro = false
+
+-- Function to handle button click
+local function onButtonClick()
+    AutoAggro = not AutoAggro
+    button.Text = AutoAggro and "Aggro On" or "Aggro Off"
+    
+    -- Update label visibility
+    warningLabel.Visible = AutoAggro
+    
+    -- Implement your logic here
+    if AutoAggro then
+        print("Aggro Ghost Hunting Enabled")
+        -- Call the function to start aggro ghost hunting
+        -- StartAggroGhostHunting() -- Ensure this function is defined elsewhere
+    else
+        print("Aggro Ghost Hunting Disabled")
+        -- Call the function to stop aggro ghost hunting
+        -- StopAggroGhostHunting() -- Ensure this function is defined elsewhere
+    end
+end
+
+-- Connect button click to function
+button.MouseButton1Click:Connect(onButtonClick)
