@@ -27,9 +27,9 @@ local function createOrUpdateChecklist()
     -- Create new checklist frame
     checklistFrame = Instance.new("Frame")
     checklistFrame.Size = UDim2.new(0, 150, 0, 30)  -- Small width and height
-    checklistFrame.Position = UDim2.new(0.5, -75, 0, 10)  -- Centered horizontally, near the top
+    checklistFrame.Position = UDim2.new(0.5, -75, 0, 50)  -- Centered horizontally, a bit below the top
     checklistFrame.AnchorPoint = Vector2.new(0.5, 0)  -- Center the frame horizontally
-    checklistFrame.BackgroundTransparency = 0.5
+    checklistFrame.BackgroundTransparency = 0.7  -- Slightly more transparent
     checklistFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
     checklistFrame.BorderSizePixel = 2
     checklistFrame.Parent = game.Players.LocalPlayer.PlayerGui.ScreenGui
@@ -37,13 +37,14 @@ local function createOrUpdateChecklist()
     -- Function to update checklist items
     local function updateChecklist(itemName)
         local itemLabel = Instance.new("TextLabel")
-        itemLabel.Size = UDim2.new(1, 0, 0, 15)
-        itemLabel.Position = UDim2.new(0, 5, 0, 5)  -- Adjusted position with padding
+        itemLabel.Size = UDim2.new(1, 0, 1, 0)  -- Fill the entire frame
+        itemLabel.Position = UDim2.new(0, 0, 0, 0)  -- Position to fill the frame
         itemLabel.BackgroundTransparency = 1
         itemLabel.Font = Enum.Font.SourceSans
         itemLabel.TextSize = 14
         itemLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-        itemLabel.TextXAlignment = Enum.TextXAlignment.Left  -- Align text to the left
+        itemLabel.TextXAlignment = Enum.TextXAlignment.Center  -- Center text horizontally
+        itemLabel.TextYAlignment = Enum.TextYAlignment.Center  -- Center text vertically
         itemLabel.Text = "✓ " .. itemName
         itemLabel.Parent = checklistFrame
     end
