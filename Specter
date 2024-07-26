@@ -81,7 +81,7 @@ teleportToBoneButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 teleportToBoneButton.BackgroundColor3 = Color3.fromRGB(0, 128, 255)
 teleportToBoneButton.BackgroundTransparency = 0.7  -- Set transparency here
 teleportToBoneButton.TextStrokeTransparency = 0
-teleportToBoneButton.Text = "To Bone"
+teleportToBoneButton.Text = "Extra Evi"
 teleportToBoneButton.MouseButton1Click:Connect(function()
    loadstring(game:HttpGet("https://raw.githubusercontent.com/Shipwuu/By-Me/main/Find%20Extra%20Evidence"))()
 end)
