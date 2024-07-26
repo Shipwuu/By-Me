@@ -1,14 +1,15 @@
 -- Services
 local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 
 -- Variables
-local client = Players.LocalPlayer
-local Items = Workspace:FindFirstChild("Items")
-local Rooms = Workspace:FindFirstChild("House") and Workspace.House:FindFirstChild("Rooms")
-local GhostRoom = {}
-local IsReady = false
-local hasTeleported = false  -- Flag to track if teleportation has already occurred
+local player = Players.LocalPlayer
+local client = player
+local screenGui = Instance.new("ScreenGui")
+local teleportFrame
+local huntFrame
+local huntLabel
 
 -- Functions
 local function log(message)
@@ -17,15 +18,14 @@ end
 
 -- Function to create or update GUI for teleport buttons and search bar
 local function createTeleportFrame()
-    -- Create new frame
-    local teleportFrame = Instance.new("ScrollingFrame")
+    teleportFrame = Instance.new("ScrollingFrame")
     teleportFrame.Size = UDim2.new(0, 150, 0, 180)  -- Adjusted size to fit search bar and buttons
     teleportFrame.Position = UDim2.new(1, -160, 1, -160)  -- Bottom-right position with offset
     teleportFrame.BackgroundTransparency = 0.5
     teleportFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
     teleportFrame.BorderSizePixel = 2
     teleportFrame.ScrollBarThickness = 6
-    teleportFrame.Parent = game.Players.LocalPlayer.PlayerGui.ScreenGui
+    teleportFrame.Parent = screenGui
 
     -- Create UIListLayout for buttons
     local uiListLayout = Instance.new("UIListLayout")
@@ -79,10 +79,10 @@ local function addSearchBarToFrame(frame, updateButtonList)
     end)
 end
 
--- Initialize the teleport buttons and search bar
-function initTeleport()
+-- Function to initialize teleport buttons and search bar
+local function initTeleport()
     local teleportFrame = createTeleportFrame()
-    
+
     local function updateButtonList(query)
         -- Clear existing buttons
         for _, child in pairs(teleportFrame:GetChildren()) do
@@ -102,7 +102,7 @@ function initTeleport()
 
         -- Add Room Buttons
         local index = 1
-        for _, room in pairs(Rooms:GetChildren()) do
+        for _, room in pairs(Workspace:FindFirstChild("House") and Workspace.House:FindFirstChild("Rooms"):GetChildren() or {}) do
             local RoomName = room:IsA('Folder') and room:FindFirstChild('RoomName') and room.RoomName.Value
             if RoomName and RoomName:lower():find(query) then
                 addButtonToFrame(teleportFrame, RoomName, function()
@@ -122,5 +122,53 @@ function initTeleport()
     updateButtonList("")  -- Initialize with all buttons visible
 end
 
+-- Function to create or update GUI for hunt display
+local function createHuntDisplay()
+    huntFrame = Instance.new("Frame")
+    huntFrame.Size = UDim2.new(0, 150, 0, 30)  -- Smaller and slightly longer frame
+    huntFrame.Position = UDim2.new(0.5, 55, 0, 50)  -- Positioned to the right of the checklistFrame
+    huntFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    huntFrame.BackgroundTransparency = 0.7  -- More transparency
+    huntFrame.BorderSizePixel = 2
+    huntFrame.Visible = false
+    huntFrame.Parent = screenGui
+
+    huntLabel = Instance.new("TextLabel")
+    huntLabel.Size = UDim2.new(1, 0, 1, 0)
+    huntLabel.BackgroundTransparency = 1
+    huntLabel.Font = Enum.Font.SourceSans
+    huntLabel.TextSize = 18
+    huntLabel.TextColor3 = Color3.fromRGB(255, 255, 255)  -- White color for text
+    huntLabel.Text = "Hunt"
+    huntLabel.TextStrokeTransparency = 0.5
+    huntLabel.TextXAlignment = Enum.TextXAlignment.Center
+    huntLabel.TextYAlignment = Enum.TextYAlignment.Center
+    huntLabel.Parent = huntFrame
+end
+
+-- Function to monitor ghost hunting
+local function monitorGhostHunting()
+    local function updateHuntDisplay(isHunting)
+        if isHunting then
+            huntFrame.BackgroundColor3 = Color3.fromRGB(255, 0, 0)  -- Red color
+        else
+            huntFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)  -- Black color
+        end
+        huntFrame.Visible = isHunting
+    end
+
+    RunService.RenderStepped:Connect(function()
+        local GhostModel = Workspace:FindFirstChild('GhostModel')
+        local Base = GhostModel and GhostModel:FindFirstChild('Base')
+        local isHunting = Base and Base.Transparency == 0
+
+        updateHuntDisplay(isHunting)
+    end)
+end
+
 -- Initialize GUI
-coroutine.wrap(initTeleport)()
+screenGui.Name = "MainGui"
+screenGui.Parent = player:WaitForChild("PlayerGui")
+initTeleport()
+createHuntDisplay()
+monitorGhostHunting()
