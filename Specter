@@ -685,7 +685,7 @@ godButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 godButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)  -- Red color for visibility
 godButton.BackgroundTransparency = 0.7
 godButton.TextStrokeTransparency = 0
-godButton.Text = "God Mode"
+godButton.Text = "Find Room"
 
 -- God Button Functionality
 godButton.MouseButton1Click:Connect(function()
