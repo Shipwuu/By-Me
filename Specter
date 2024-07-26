@@ -726,15 +726,10 @@ local Workspace = game:GetService("Workspace")
 -- Variables
 local player = Players.LocalPlayer
 local client = player
-local screenGui = Instance.new("ScreenGui")
+local screenGui
 local teleportFrame
 local huntFrame
 local huntLabel
-
--- Functions
-local function log(message)
-    print("[SCRIPT]: " .. message)
-end
 
 -- Function to create or update GUI for teleport buttons and search bar
 local function createTeleportFrame()
@@ -808,7 +803,7 @@ end
 
 -- Function to initialize teleport buttons and search bar
 local function initTeleport()
-    local teleportFrame = createTeleportFrame()
+    teleportFrame = createTeleportFrame()
 
     local function updateButtonList(query)
         -- Clear existing buttons
@@ -894,8 +889,11 @@ local function monitorGhostHunting()
 end
 
 -- Initialize GUI
+screenGui = Instance.new("ScreenGui")
 screenGui.Name = "MainGui"
 screenGui.Parent = player:WaitForChild("PlayerGui")
+screenGui.ResetOnSpawn = false  -- Ensure GUI persists across respawns
+
 initTeleport()
 createHuntDisplay()
 monitorGhostHunting()
