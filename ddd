@@ -10,7 +10,6 @@ local Rooms = Workspace:FindFirstChild("House") and Workspace.House:FindFirstChi
 local GhostRoom = {}
 local IsReady = false
 local hasTeleported = false
-local checklistFrame = nil
 
 -- Function to log messages
 local function log(message)
@@ -23,39 +22,44 @@ local function createTeleportUI()
     local screenGui = client.PlayerGui:FindFirstChild("TeleportUI") or Instance.new("ScreenGui", client.PlayerGui)
     screenGui.Name = "TeleportUI"
 
-    -- Create a Frame for buttons
-    local frame = Instance.new("Frame")
-    frame.Name = "TeleportFrame"
-    frame.Size = UDim2.new(0, 300, 0, 500)  -- Size of the frame
-    frame.Position = UDim2.new(0.5, -150, 0.5, -250)  -- Center the frame
-    frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)  -- Background color
-    frame.BackgroundTransparency = 0.5  -- Background transparency
-    frame.BorderSizePixel = 2
-    frame.Parent = screenGui
+    -- Create a ScrollingFrame for buttons
+    local scrollingFrame = Instance.new("ScrollingFrame")
+    scrollingFrame.Name = "TeleportScrollingFrame"
+    scrollingFrame.Size = UDim2.new(0, 200, 0, 300)  -- Smaller size for the scrolling frame
+    scrollingFrame.Position = UDim2.new(1, -210, 1, -320)  -- Bottom right position with offset
+    scrollingFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)  -- Background color
+    scrollingFrame.BackgroundTransparency = 0.5  -- Background transparency
+    scrollingFrame.BorderSizePixel = 2
+    scrollingFrame.ScrollBarThickness = 10
+    scrollingFrame.Parent = screenGui
+
+    -- Create a UIListLayout for the buttons
+    local listLayout = Instance.new("UIListLayout")
+    listLayout.Padding = UDim.new(0, 5)
+    listLayout.Parent = scrollingFrame
 
     -- Create "Van" Button
     local vanButton = Instance.new("TextButton")
     vanButton.Name = "VanButton"
-    vanButton.Size = UDim2.new(1, 0, 0, 50)  -- Size of the button
-    vanButton.Position = UDim2.new(0, 0, 0, 10)  -- Position of the button
+    vanButton.Size = UDim2.new(1, -10, 0, 50)  -- Size of the button
+    vanButton.Position = UDim2.new(0, 5, 0, 5)  -- Position with padding
     vanButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)  -- Background color
     vanButton.TextColor3 = Color3.fromRGB(255, 255, 255)  -- Text color
     vanButton.Text = "Van"
-    vanButton.Parent = frame
+    vanButton.Parent = scrollingFrame
 
     -- Create Room Buttons
-    local buttonYPosition = 70
     for _, room in pairs(Rooms:GetChildren()) do
         if room:IsA("Folder") and room:FindFirstChild("RoomName") then
             local roomName = room.RoomName.Value
             local roomButton = Instance.new("TextButton")
             roomButton.Name = roomName .. "Button"
-            roomButton.Size = UDim2.new(1, 0, 0, 50)  -- Size of the button
-            roomButton.Position = UDim2.new(0, 0, 0, buttonYPosition)  -- Position of the button
+            roomButton.Size = UDim2.new(1, -10, 0, 50)  -- Size of the button
+            roomButton.Position = UDim2.new(0, 5, 0, 5)  -- Position with padding
             roomButton.BackgroundColor3 = Color3.fromRGB(0, 0, 255)  -- Background color
             roomButton.TextColor3 = Color3.fromRGB(255, 255, 255)  -- Text color
             roomButton.Text = roomName
-            roomButton.Parent = frame
+            roomButton.Parent = scrollingFrame
 
             -- Connect room button to teleport function
             roomButton.MouseButton1Click:Connect(function()
@@ -67,8 +71,6 @@ local function createTeleportUI()
                     end
                 end
             end)
-
-            buttonYPosition = buttonYPosition + 60  -- Adjust Y position for the next button
         end
     end
 
