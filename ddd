@@ -143,6 +143,7 @@ function findEvidence()
             end
 
             Evidence['EMF'] = s
+            print('EMF Evidence:', s)
             updateEvidenceUI()
             return s
         end
@@ -159,6 +160,7 @@ function findEvidence()
                 end
             end
             Evidence['SpiritBox'] = s
+            print('Spirit Box Evidence:', s)
             updateEvidenceUI()
             return s
         end
@@ -181,6 +183,7 @@ function findEvidence()
                 end
             end
             Evidence['Writing'] = s
+            print('Writing Evidence:', s)
             updateEvidenceUI()
             return s
         end
@@ -208,6 +211,7 @@ function findEvidence()
                 end
             end
             Evidence['Fingerprints'] = s
+            print('Fingerprints Evidence:', s)
             updateEvidenceUI()
             return s
         end
@@ -222,6 +226,7 @@ function findEvidence()
                 wait(.5)
             end
             Evidence['Orbs'] = s
+            print('Orbs Evidence:', s)
             updateEvidenceUI()
             return s
         end
@@ -239,6 +244,7 @@ function findEvidence()
                 --// cold breath
             end
             Evidence['Freezing'] = s
+            print('Freezing Temp Evidence:', s)
             updateEvidenceUI()
             return s
         end
