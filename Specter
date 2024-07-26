@@ -671,7 +671,8 @@ local LocalPlayer = Players.LocalPlayer
 -- Create GUI
 local sanityGui = Instance.new("ScreenGui")
 sanityGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
-sanityGui.ResetOnSpawn = false
+godButton.ResetOnSpawn = false
+
 -- Create God Button
 local godButton = Instance.new("TextButton")
 godButton.Name = "GodButton"
