@@ -48,6 +48,7 @@ local function updateEvidenceUI()
 
     local yOffset = 0
     for evidence, detected in pairs(Evidence) do
+        print("Updating UI for evidence:", evidence, detected) -- Add debug log
         if detected then
             local label = Instance.new("TextLabel", evidenceList)
             label.Size = UDim2.new(1, 0, 0, 20)
