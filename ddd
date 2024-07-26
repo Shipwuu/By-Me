@@ -19,18 +19,18 @@ end
 local function createTeleportFrame()
     -- Create new frame
     local teleportFrame = Instance.new("ScrollingFrame")
-    teleportFrame.Size = UDim2.new(0, 200, 0, 200)  -- Adjusted size
-    teleportFrame.Position = UDim2.new(1, -210, 1, -210)  -- Bottom-right position with offset
+    teleportFrame.Size = UDim2.new(0, 150, 0, 150)  -- Smaller size
+    teleportFrame.Position = UDim2.new(1, -160, 1, -160)  -- Bottom-right position with offset
     teleportFrame.BackgroundTransparency = 0.5
     teleportFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
     teleportFrame.BorderSizePixel = 2
-    teleportFrame.ScrollBarThickness = 8  -- Add scroll bar for navigation
+    teleportFrame.ScrollBarThickness = 6  -- Slightly smaller scroll bar
     teleportFrame.Parent = game.Players.LocalPlayer.PlayerGui.ScreenGui
 
     -- Create UIListLayout for buttons
     local uiListLayout = Instance.new("UIListLayout")
     uiListLayout.FillDirection = Enum.FillDirection.Vertical
-    uiListLayout.Padding = UDim.new(0, 5)  -- Padding between buttons
+    uiListLayout.Padding = UDim.new(0, 3)  -- Smaller padding between buttons
     uiListLayout.Parent = teleportFrame
 
     return teleportFrame
@@ -38,13 +38,13 @@ end
 
 local function addButtonToFrame(frame, name, callback)
     local button = Instance.new("TextButton")
-    button.Size = UDim2.new(1, -10, 0, 30)  -- Adjusted size
+    button.Size = UDim2.new(1, -10, 0, 25)  -- Smaller button size
     button.Position = UDim2.new(0, 5, 0, 5)  -- Position with padding
-    button.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    button.BackgroundColor3 = Color3.fromRGB(60, 60, 60)  -- Slightly lighter color
     button.TextColor3 = Color3.fromRGB(255, 255, 255)
     button.Text = name
     button.Font = Enum.Font.SourceSans
-    button.TextSize = 14
+    button.TextSize = 12  -- Smaller text size
     button.Parent = frame
 
     button.MouseButton1Click:Connect(callback)
@@ -57,8 +57,7 @@ function initTeleport()
     -- Van Button
     addButtonToFrame(teleportFrame, "Van", function()
         local VanSpawn = workspace:FindFirstChild('House') and workspace.House:FindFirstChild('VanSpawn')
-        local Humanoid, HRoot = (client.Character and client.Character:FindFirstChildOfClass('Humanoid')), (client.Character and (client.Character.PrimaryPart or client.Character:FindFirstChild('HumanoidRootPart')))
-        if not client.Character:FindFirstChildOfClass('Humanoid').Sit then client.Character.Humanoid.Sit = true end
+        local HRoot = (client.Character and (client.Character.PrimaryPart or client.Character:FindFirstChild('HumanoidRootPart')))
         if VanSpawn then
             HRoot.CFrame = VanSpawn.CFrame - Vector3.new(0, 4, 0)
         end
@@ -70,8 +69,7 @@ function initTeleport()
         local RoomName = room:IsA('Folder') and room:FindFirstChild('RoomName') and room.RoomName.Value
         if RoomName then
             addButtonToFrame(teleportFrame, RoomName, function()
-                local Humanoid, HRoot = (client.Character and client.Character:FindFirstChildOfClass('Humanoid')), (client.Character and (client.Character.PrimaryPart or client.Character:FindFirstChild('HumanoidRootPart')))
-                if not client.Character:FindFirstChildOfClass('Humanoid').Sit then client.Character.Humanoid.Sit = true end
+                local HRoot = (client.Character and (client.Character.PrimaryPart or client.Character:FindFirstChild('HumanoidRootPart')))
 
                 local Hitbox = room:IsA('Folder') and room:FindFirstChild('Hitbox')
                 if Hitbox then
