@@ -83,7 +83,7 @@ teleportToBoneButton.BackgroundTransparency = 0.7  -- Set transparency here
 teleportToBoneButton.TextStrokeTransparency = 0
 teleportToBoneButton.Text = "To Bone"
 teleportToBoneButton.MouseButton1Click:Connect(function()
-    HumanoidRootPart.CFrame = Workspace.House.Bone.CFrame + Vector3.new(0, 2, 0)
+   loadstring(game:HttpGet("https://raw.githubusercontent.com/Shipwuu/By-Me/main/Find%20Extra%20Evidence"))()
 end)
 
 local startButton = Instance.new("TextButton")
