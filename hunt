@@ -15,7 +15,7 @@ screenGui.Name = "HuntDisplayGui"
 screenGui.Parent = player:WaitForChild("PlayerGui")
 
 frame.Size = UDim2.new(0, 120, 0, 40)  -- Smaller and slightly longer frame
-frame.Position = UDim2.new(1, -130, 0.5, -20)  -- Position between the checklistFrame and right side
+frame.Position = UDim2.new(0.5, 55, 0, 50)  -- Position to the right of the checklistFrame
 frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 frame.BackgroundTransparency = 0.7  -- More transparency
 frame.BorderSizePixel = 2
