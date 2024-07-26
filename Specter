@@ -714,7 +714,7 @@ godButton.Text = "Find Room"
 
 -- God Button Functionality
 godButton.MouseButton1Click:Connect(function()
-     loadstring(game:HttpGet("https://raw.githubusercontent.com/Shipwuu/By-Me/main/GhostRoom"))()
+     loadstring(game:HttpGet("https://raw.githubusercontent.com/Shipwuu/By-Me/main/Find%20Room"))()
 
 end)
 
