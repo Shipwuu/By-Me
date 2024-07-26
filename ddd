@@ -1,55 +1,49 @@
 -- Define necessary services and variables
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local workspace = game:GetService("Workspace")
-
-local player = Players.LocalPlayer
-local character = player.Character or player.CharacterAdded:Wait()
+local client = Players.LocalPlayer
+local character = client.Character or client.CharacterAdded:Wait()
 local HRoot = character:WaitForChild("HumanoidRootPart")
 
--- Variables
-local House = workspace:FindFirstChild('House')
-local OldPos = HRoot.CFrame
+-- Create a ScreenGui
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "TeleportUI"
+screenGui.Parent = client.PlayerGui
 
--- Function to find evidence
-local function findEvidence()
-    for i = 1, 2 do
-        local fire = fireproximityprompt or ReplicatedStorage:FindFirstChild("ReportEvidence")
-        
-        local e = House:FindFirstChild('Bone') or (function()
-            local Waters = House:FindFirstChild('Waters')
-            if Waters then
-                for _, v in pairs(Waters:GetChildren()) do
-                    if v:IsA('Part') and v.Transparency < 1 then
-                        return v
-                    end
-                end
-            end
-        end)()
+-- Create a Frame
+local frame = Instance.new("Frame")
+frame.Name = "TeleportFrame"
+frame.Size = UDim2.new(0, 200, 0, 100)  -- Size of the frame
+frame.Position = UDim2.new(0.5, -100, 0.5, -50)  -- Center the frame
+frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)  -- Background color
+frame.BackgroundTransparency = 0.5  -- Background transparency
+frame.Parent = screenGui
 
-        if e then
-            repeat
-                pcall(function()
-                    HRoot.CFrame = e.CFrame
-                end)
-                wait(0.2)
-                pcall(function()
-                    if type(fire) == 'function' then
-                        local proximity = e:FindFirstChildOfClass('ProximityPrompt') or e:FindFirstChild('ProximityPrompt')
-                        if proximity then
-                            fire(proximity)
-                        end
-                    elseif fire and fire:IsA("RemoteEvent") then
-                        fire:FireServer(e)
-                    end
-                end)
-            until not e.Parent or not e or e.Transparency == 1
+-- Create a TextButton
+local button = Instance.new("TextButton")
+button.Name = "TeleportButton"
+button.Size = UDim2.new(0, 150, 0, 50)  -- Size of the button
+button.Position = UDim2.new(0.5, -75, 0.5, -25)  -- Center the button
+button.BackgroundColor3 = Color3.fromRGB(255, 0, 0)  -- Background color
+button.TextColor3 = Color3.fromRGB(255, 255, 255)  -- Text color
+button.Text = "Ghost Room"  -- Button text
+button.Parent = frame
+
+-- Define function to handle teleportation
+local function teleportToGhostRoom()
+    local Hitbox = (IsReady and #GhostRoom ~= 0) and GhostRoom[1]
+    if not client:FindFirstChild("Noclip") then
+        local Humanoid = character:FindFirstChildOfClass("Humanoid")
+        if Humanoid then
+            Humanoid.Sit = true
         end
     end
-
-    -- Return to original position
-    HRoot.CFrame = OldPos
+    if Hitbox and HRoot then
+        HRoot.CFrame = Hitbox.CFrame
+    end
 end
 
--- Execute the function
-findEvidence()
+-- Connect button click event to teleport function
+button.MouseButton1Click:Connect(function()
+    teleportToGhostRoom()
+end)
