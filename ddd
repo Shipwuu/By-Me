@@ -1,20 +1,17 @@
 -- Services
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
 
 -- Variables
 local player = Players.LocalPlayer
 local client = player
-local screenGui = Instance.new("ScreenGui")
+local screenGui
 local teleportFrame
 local huntFrame
 local huntLabel
-
--- Functions
-local function log(message)
-    print("[SCRIPT]: " .. message)
-end
+local toggleButton
 
 -- Function to create or update GUI for teleport buttons and search bar
 local function createTeleportFrame()
@@ -88,7 +85,7 @@ end
 
 -- Function to initialize teleport buttons and search bar
 local function initTeleport()
-    local teleportFrame = createTeleportFrame()
+    teleportFrame = createTeleportFrame()
 
     local function updateButtonList(query)
         -- Clear existing buttons
@@ -173,9 +170,40 @@ local function monitorGhostHunting()
     end)
 end
 
+-- Function to toggle the visibility of the teleport frame with animation
+local function toggleTeleportFrame()
+    local isVisible = teleportFrame.Visible
+    local targetPosition = isVisible and UDim2.new(1, -160, 1, -180) or UDim2.new(1, -160, 1, -360)  -- Adjusted positions for slide-up and slide-down
+
+    local tweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+    local tween = TweenService:Create(teleportFrame, tweenInfo, {Position = targetPosition})
+    tween:Play()
+
+    teleportFrame.Visible = not isVisible
+end
+
+-- Function to create the toggle button
+local function createToggleButton()
+    toggleButton = Instance.new("TextButton")
+    toggleButton.Size = UDim2.new(0, 50, 0, 30)  -- Size of the toggle button
+    toggleButton.Position = UDim2.new(1, -220, 1, -160)  -- Position to the left of the teleport frame
+    toggleButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)  -- Slightly lighter color
+    toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    toggleButton.Text = "Toggle"
+    toggleButton.Font = Enum.Font.SourceSans
+    toggleButton.TextSize = 12  -- Text size
+    toggleButton.Parent = screenGui
+
+    toggleButton.MouseButton1Click:Connect(toggleTeleportFrame)
+end
+
 -- Initialize GUI
+screenGui = Instance.new("ScreenGui")
 screenGui.Name = "MainGui"
 screenGui.Parent = player:WaitForChild("PlayerGui")
+screenGui.ResetOnSpawn = false  -- Ensure GUI persists across respawns
+
 initTeleport()
 createHuntDisplay()
+createToggleButton()
 monitorGhostHunting()
