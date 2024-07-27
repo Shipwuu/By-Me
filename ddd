@@ -124,10 +124,17 @@ local function detectWriting(Book)
             t[I] = Book:FindFirstChild(V)
             if typeof(t[I]) == 'Instance' then
                 local b = t[I]:FindFirstChildOfClass('Decal')
-                local c = b.Transparency == 0
-                if c then
-                    s = true
-                    break
+                if b then
+                    b:GetPropertyChangedSignal("Transparency"):Connect(function()
+                        if b.Transparency == 0 then
+                            s = true
+                            addEvidenceToChecklist("Writing")
+                        end
+                    end)
+                    if b.Transparency == 0 then
+                        s = true
+                        addEvidenceToChecklist("Writing")
+                    end
                 end
             end
         end
