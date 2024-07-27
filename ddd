@@ -1,5 +1,6 @@
 -- Services
 local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 
 -- Variables
@@ -7,122 +8,150 @@ local player = Players.LocalPlayer
 local client = player
 local screenGui = Instance.new("ScreenGui")
 local checklistFrame = Instance.new("Frame")
-local detectedParts = {}
+local huntFrame = Instance.new("Frame")
+local huntLabel = Instance.new("TextLabel")
+local evidenceFrame = Instance.new("Frame")
+local evidenceListLayout = Instance.new("UIListLayout")
+local evidenceLabels = {}
 
--- Function to create or update the checklist frame
-local function updateChecklistFrame()
-    -- Clear existing children
-    for _, child in pairs(checklistFrame:GetChildren()) do
-        if child:IsA('TextLabel') then
-            child:Destroy()
-        end
-    end
-
-    -- Add detected parts to the frame
-    for partName, isDetected in pairs(detectedParts) do
-        local label = Instance.new("TextLabel")
-        label.Size = UDim2.new(1, 0, 0, 25)
-        label.BackgroundTransparency = 1
-        label.Font = Enum.Font.SourceSans
-        label.TextSize = 14
-        label.TextColor3 = isDetected and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 255, 255)
-        label.Text = partName .. (isDetected and " ✔" or "")
-        label.Parent = checklistFrame
-    end
-end
-
--- Function to mark a part as detected
-local function markPartAsDetected(partName)
-    detectedParts[partName] = true
-    updateChecklistFrame()
-end
-
--- Initializing GUI elements
-screenGui.Name = "GhostRoomChecklistGui"
+-- Create the GUI elements
+screenGui.Name = "EvidenceChecklistGui"
+screenGui.ResetOnSpawn = false
 screenGui.Parent = player:WaitForChild("PlayerGui")
-screenGui.ResetOnSpawn = false  -- Ensure GUI persists across respawns
 
-checklistFrame.Size = UDim2.new(0, 150, 0, 200)  -- Adjust size as needed
-checklistFrame.Position = UDim2.new(1, -160, 0, 10)  -- Top right position with some offset
+checklistFrame.Size = UDim2.new(0, 150, 0, 30)
+checklistFrame.Position = UDim2.new(0.5, -75, 0, 50)
 checklistFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-checklistFrame.BackgroundTransparency = 0.5
+checklistFrame.BackgroundTransparency = 0.7
 checklistFrame.BorderSizePixel = 2
 checklistFrame.Parent = screenGui
 
--- Initialize detected parts list
-detectedParts = {
-    ["Orb"] = false,
-    ["EMF Reader"] = false,
-    ["Book"] = false,
-    ["Spirit Box"] = false,
-    ["Thermometer"] = false
-}
+huntFrame.Size = UDim2.new(0, 150, 0, 30)
+huntFrame.Position = UDim2.new(0.5, 55, 0, 50)
+huntFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+huntFrame.BackgroundTransparency = 0.7
+huntFrame.BorderSizePixel = 2
+huntFrame.Visible = false
+huntFrame.Parent = screenGui
 
--- Function to find evidence parts
-local function findEvidenceParts()
-    local Items = Workspace:FindFirstChild("Items")
+huntLabel.Size = UDim2.new(1, 0, 1, 0)
+huntLabel.BackgroundTransparency = 1
+huntLabel.Font = Enum.Font.SourceSans
+huntLabel.TextSize = 18
+huntLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+huntLabel.Text = "Hunt"
+huntLabel.TextStrokeTransparency = 0.5
+huntLabel.TextXAlignment = Enum.TextXAlignment.Center
+huntLabel.TextYAlignment = Enum.TextYAlignment.Center
+huntLabel.Parent = huntFrame
 
-    local function findEMF()
-        local EMF = Items and Items:FindFirstChild("EMF Reader")
-        return EMF
+evidenceFrame.Size = UDim2.new(0, 150, 0, 150)
+evidenceFrame.Position = UDim2.new(1, -160, 0, 10)
+evidenceFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+evidenceFrame.BackgroundTransparency = 0.7
+evidenceFrame.BorderSizePixel = 2
+evidenceFrame.Visible = true
+evidenceFrame.Parent = screenGui
+
+evidenceListLayout.Padding = UDim.new(0, 5)
+evidenceListLayout.FillDirection = Enum.FillDirection.Vertical
+evidenceListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+evidenceListLayout.VerticalAlignment = Enum.VerticalAlignment.Top
+evidenceListLayout.Parent = evidenceFrame
+
+-- Function to start monitoring ghost hunting
+local function monitorGhostHunting()
+    local function updateHuntDisplay(isHunting)
+        if isHunting then
+            huntFrame.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+        else
+            huntFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+        end
+        huntFrame.Visible = isHunting
     end
 
-    local function findBook()
-        local Book = Items and Items:FindFirstChild("Book")
-        return Book
-    end
+    RunService.RenderStepped:Connect(function()
+        local GhostModel = Workspace:FindFirstChild('GhostModel')
+        local Base = GhostModel and GhostModel:FindFirstChild('Base')
+        local isHunting = Base and Base.Transparency == 0
 
-    local function findSpiritBox()
-        local SB = Items and Items:FindFirstChild("Spirit Box")
-        return SB
-    end
+        updateHuntDisplay(isHunting)
+    end)
+end
 
-    local function findThermometer()
-        local TM = Items and Items:FindFirstChild("Thermometer")
-        return TM
-    end
+-- Function to add evidence to the checklist
+local function addEvidenceToChecklist(evidence)
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(1, 0, 0, 30)
+    label.BackgroundTransparency = 1
+    label.Font = Enum.Font.SourceSans
+    label.TextSize = 18
+    label.TextColor3 = Color3.fromRGB(255, 255, 255)
+    label.Text = evidence .. " ✔"
+    label.TextStrokeTransparency = 0.5
+    label.TextXAlignment = Enum.TextXAlignment.Center
+    label.TextYAlignment = Enum.TextYAlignment.Center
+    label.Parent = evidenceFrame
+    table.insert(evidenceLabels, label)
+end
 
-    -- Check for evidence parts
-    while true do
-        local EMF = findEMF()
-        local Book = findBook()
-        local SB = findSpiritBox()
-        local TM = findThermometer()
+-- Detecting evidence parts
+local function detectEvidenceParts()
+    local evidenceParts = {
+        ["Orb"] = "Orbs",
+        ["emfpart5"] = "EMF 5",
+        ["Book"] = "Writing",
+        ["Spirit Box"] = "Spirit Box",
+        ["Thermometer"] = "Freezing Temps",
+    }
 
-        if EMF then
-            markPartAsDetected("EMF Reader")
+    for partName, evidenceName in pairs(evidenceParts) do
+        if Workspace:FindFirstChild(partName) then
+            addEvidenceToChecklist(evidenceName)
         end
-        if Book then
-            markPartAsDetected("Book")
-        end
-        if SB then
-            markPartAsDetected("Spirit Box")
-        end
-        if TM then
-            markPartAsDetected("Thermometer")
-        end
-
-        wait(0.5)
     end
 end
 
--- Call function to find evidence parts
-coroutine.wrap(findEvidenceParts)()
-
--- Add initial detected parts
-for _, partName in ipairs({"Orb", "emfpart5"}) do
-    local detectedPart = Workspace:FindFirstChild(partName)
-    if detectedPart then
-        markPartAsDetected(partName)
-    end
-end
-
--- Detecting new parts added to the workspace
+-- Monitoring the appearance of evidence parts
 Workspace.ChildAdded:Connect(function(child)
-    if detectedParts[child.Name] ~= nil then
-        markPartAsDetected(child.Name)
+    local evidenceParts = {
+        ["Orb"] = "Orbs",
+        ["emfpart5"] = "EMF 5",
+        ["Book"] = "Writing",
+        ["Spirit Box"] = "Spirit Box",
+        ["Thermometer"] = "Freezing Temps",
+    }
+
+    if evidenceParts[child.Name] then
+        addEvidenceToChecklist(evidenceParts[child.Name])
     end
 end)
 
--- Initial update of the checklist frame
-updateChecklistFrame()
+-- Call functions to start monitoring ghost hunting and detect initial evidence parts
+monitorGhostHunting()
+detectEvidenceParts()
+
+-- Toggle button for the evidence frame
+local toggleButton = Instance.new("TextButton")
+toggleButton.Size = UDim2.new(0, 100, 0, 30)
+toggleButton.Position = UDim2.new(1, -260, 0, 10)
+toggleButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+toggleButton.Text = "Toggle Checklist"
+toggleButton.Font = Enum.Font.SourceSans
+toggleButton.TextSize = 14
+toggleButton.Parent = screenGui
+
+local isChecklistVisible = false
+
+toggleButton.MouseButton1Click:Connect(function()
+    if isChecklistVisible then
+        evidenceFrame:TweenPosition(UDim2.new(1, -160, 0, 200), "Out", "Quad", 0.5, true, function()
+            evidenceFrame.Visible = false
+        end)
+    else
+        evidenceFrame.Visible = true
+        evidenceFrame:TweenPosition(UDim2.new(1, -160, 0, 10), "Out", "Quad", 0.5, true)
+    end
+    isChecklistVisible = not isChecklistVisible
+end)
