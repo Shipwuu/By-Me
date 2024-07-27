@@ -64,7 +64,7 @@ end
 -- Evidence detection functions
 local function detectEMF(EMF)
     local s = false
-    if EMF and s == false then 
+    if EMF then 
         local L = {}
         for I = 1, 5 do table.insert(L, 'L' .. tostring(I)) end
         local t_s = {}
@@ -83,7 +83,7 @@ local function detectEMF(EMF)
             end
         end
         s = (s == true) or (#t_s <= 5 and t_s)
-    elseif not EMF and s == false then
+    elseif not EMF then
         local a = Workspace:FindFirstChild('emfpart5') or Workspace:WaitForChild('emfpart5')
         if a then
             s = true
@@ -99,7 +99,7 @@ end
 
 local function detectSpiritBox(SB)
     local s = false
-    if SB and s == false then
+    if SB then
         local child = SB:FindFirstChild('Hand') and SB.Hand:GetChildren()
         for _, V in pairs(child) do
             if V.ClassName == 'Sound' and V.Playing == true then
@@ -118,7 +118,7 @@ end
 
 local function detectWriting(Book)
     local s = false
-    if Book and s == false then
+    if Book then
         local t = {}
         for I = 1, 2 do table.insert(t, 'Page' .. tostring(I)) end
         for I, V in pairs(t) do
@@ -139,10 +139,6 @@ local function detectWriting(Book)
                 end
             end
         end
-    end
-
-    if s then
-        addEvidenceToChecklist("Writing")
     end
 
     return s
@@ -188,12 +184,9 @@ end
 
 local function detectOrbs()
     local s = false
-    if s == false then
-        local a = Workspace:FindFirstChild('Orb') or Workspace:WaitForChild('Orb')
-        if a then
-            s = true
-        end
-        wait(.5)
+    local a = Workspace:FindFirstChild('Orb') or Workspace:WaitForChild('Orb')
+    if a then
+        s = true
     end
 
     if s then
@@ -205,14 +198,14 @@ end
 
 local function detectFreezingTemps(TM)
     local s = false
-    if TM and s == false then
+    if TM then
         local a = TM:FindFirstChild('Temp') and (TM.Temp:FindFirstChild('SurfaceGui') and TM.Temp.SurfaceGui.Frame.TextLabel.Text)
         local b = tonumber(a:match('%d+'))
         local c = (b <= 0)
         if c then
             s = true
         end
-    elseif not TM and s == false then
+    elseif not TM then
         -- Cold breath
     end
 
