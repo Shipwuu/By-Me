@@ -150,17 +150,26 @@ end
 
 local function detectFingerprints()
     local s = false
-    if #GhostRoom > 0 and s == false then
-        local a = GhostRoom[1].Parent
-        if a:IsA('Folder') then
-            local b = a:FindFirstChild('PrintPart') and a.PrintPart:FindFirstChild('SurfaceGui') and (a.PrintPart.SurfaceGui.Enabled == true)
-            if b then
-                s = true
-            else
-                for _, V in pairs(a:FindFirstChild('Windows'):GetChildren()) do
-                    if V:IsA('Part') and V:FindFirstChild('PrintPart') then
-                        local c = a.PrintPart:FindFirstChild('SurfaceGui') and (a.PrintPart.SurfaceGui.Enabled == true)
-                        if c then
+    local rooms = Workspace:FindFirstChild("House") and Workspace.House:FindFirstChild("Rooms")
+
+    if rooms then
+        for _, room in pairs(rooms:GetChildren()) do
+            local printPart = room:FindFirstChild("PrintPart")
+            if printPart and printPart:FindFirstChild("Print") then
+                local imageLabel = printPart.Print:FindFirstChild("ImageLabel")
+                if imageLabel and imageLabel.Visible then
+                    s = true
+                    break
+                end
+            end
+            
+            local windows = room:FindFirstChild("Windows")
+            if windows then
+                for _, window in pairs(windows:GetChildren()) do
+                    local printPart = window:FindFirstChild("PrintPart")
+                    if printPart and printPart:FindFirstChild("Print") then
+                        local imageLabel = printPart.Print:FindFirstChild("ImageLabel")
+                        if imageLabel and imageLabel.Visible then
                             s = true
                             break
                         end
