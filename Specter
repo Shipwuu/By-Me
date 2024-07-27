@@ -688,6 +688,8 @@ godButton.MouseButton1Click:Connect(function()
     end
 end)
 
+-- First of Ghost Room
+
 -- Services
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
@@ -721,6 +723,7 @@ end)
 -- Services
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
 
 -- Variables
@@ -730,16 +733,18 @@ local screenGui
 local teleportFrame
 local huntFrame
 local huntLabel
+local toggleButton
 
 -- Function to create or update GUI for teleport buttons and search bar
 local function createTeleportFrame()
     teleportFrame = Instance.new("ScrollingFrame")
     teleportFrame.Size = UDim2.new(0, 150, 0, 180)  -- Adjusted size to fit search bar and buttons
-    teleportFrame.Position = UDim2.new(1, -160, 1, -160)  -- Bottom-right position with offset
+    teleportFrame.Position = UDim2.new(1, -160, 1, 0)  -- Initial hidden position (below screen)
     teleportFrame.BackgroundTransparency = 0.5
     teleportFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
     teleportFrame.BorderSizePixel = 2
     teleportFrame.ScrollBarThickness = 6
+    teleportFrame.Visible = false
     teleportFrame.Parent = screenGui
 
     -- Create UIListLayout for buttons
@@ -888,6 +893,43 @@ local function monitorGhostHunting()
     end)
 end
 
+-- Function to toggle the visibility of the teleport frame with animation
+local function toggleTeleportFrame()
+    local isVisible = teleportFrame.Visible
+
+    if isVisible then
+        local tweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+        local tween = TweenService:Create(teleportFrame, tweenInfo, {Position = UDim2.new(1, -160, 1, 0)})  -- Slide down (off screen)
+        
+        tween.Completed:Connect(function()
+            teleportFrame.Visible = false
+        end)
+
+        tween:Play()
+    else
+        teleportFrame.Visible = true
+        local tweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+        local tween = TweenService:Create(teleportFrame, tweenInfo, {Position = UDim2.new(1, -160, 1, -180)})  -- Slide up to position
+
+        tween:Play()
+    end
+end
+
+-- Function to create the toggle button
+local function createToggleButton()
+    toggleButton = Instance.new("TextButton")
+    toggleButton.Size = UDim2.new(0, 50, 0, 30)  -- Size of the toggle button
+    toggleButton.Position = UDim2.new(1, -220, 1, -220)  -- Position on the left side of the teleport frame
+    toggleButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)  -- Button color
+    toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    toggleButton.Text = "Toggle"
+    toggleButton.Font = Enum.Font.SourceSans
+    toggleButton.TextSize = 12  -- Text size
+    toggleButton.Parent = screenGui
+
+    toggleButton.MouseButton1Click:Connect(toggleTeleportFrame)
+end
+
 -- Initialize GUI
 screenGui = Instance.new("ScreenGui")
 screenGui.Name = "MainGui"
@@ -896,8 +938,14 @@ screenGui.ResetOnSpawn = false  -- Ensure GUI persists across respawns
 
 initTeleport()
 createHuntDisplay()
+createToggleButton()
 monitorGhostHunting()
 
+-- Ensure teleport frame starts hidden
+teleportFrame.Position = UDim2.new(1, -160, 1, 0)
+teleportFrame.Visible = false
+
+-- end of Ghost Room 
 
 -- Services
 local Players = game:GetService("Players")
