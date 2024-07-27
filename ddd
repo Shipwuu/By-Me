@@ -17,11 +17,12 @@ local toggleButton
 local function createTeleportFrame()
     teleportFrame = Instance.new("ScrollingFrame")
     teleportFrame.Size = UDim2.new(0, 150, 0, 180)  -- Adjusted size to fit search bar and buttons
-    teleportFrame.Position = UDim2.new(1, -160, 1, -160)  -- Bottom-right position with offset
+    teleportFrame.Position = UDim2.new(1, -160, 1, -180)  -- Initial hidden position
     teleportFrame.BackgroundTransparency = 0.5
     teleportFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
     teleportFrame.BorderSizePixel = 2
     teleportFrame.ScrollBarThickness = 6
+    teleportFrame.Visible = false
     teleportFrame.Parent = screenGui
 
     -- Create UIListLayout for buttons
@@ -177,9 +178,12 @@ local function toggleTeleportFrame()
 
     local tweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
     local tween = TweenService:Create(teleportFrame, tweenInfo, {Position = targetPosition})
-    tween:Play()
 
-    teleportFrame.Visible = not isVisible
+    tween.Completed:Connect(function()
+        teleportFrame.Visible = not isVisible
+    end)
+
+    tween:Play()
 end
 
 -- Function to create the toggle button
@@ -207,3 +211,7 @@ initTeleport()
 createHuntDisplay()
 createToggleButton()
 monitorGhostHunting()
+
+-- Ensure teleport frame starts hidden
+teleportFrame.Position = UDim2.new(1, -160, 1, -180)
+teleportFrame.Visible = false
