@@ -16,7 +16,8 @@ screenGui.ResetOnSpawn = false
 screenGui.Parent = player:WaitForChild("PlayerGui")
 
 evidenceFrame.Size = UDim2.new(0, 150, 0, 200)
-evidenceFrame.Position = UDim2.new(0, 10, 0, 10)
+evidenceFrame.Position = UDim2.new(0, 10, 1, -210)
+evidenceFrame.AnchorPoint = Vector2.new(0, 1)
 evidenceFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 evidenceFrame.BackgroundTransparency = 0.7
 evidenceFrame.BorderSizePixel = 2
