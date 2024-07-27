@@ -16,7 +16,7 @@ screenGui.ResetOnSpawn = false
 screenGui.Parent = player:WaitForChild("PlayerGui")
 
 evidenceFrame.Size = UDim2.new(0, 150, 0, 200)
-evidenceFrame.Position = UDim2.new(1, -160, 0, 10)
+evidenceFrame.Position = UDim2.new(0, 10, 0, 10)
 evidenceFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 evidenceFrame.BackgroundTransparency = 0.7
 evidenceFrame.BorderSizePixel = 2
@@ -89,6 +89,10 @@ local function detectEMF(EMF)
         end
     end
 
+    if s then
+        addEvidenceToChecklist("EMF Level 5")
+    end
+
     return s
 end
 
@@ -103,6 +107,11 @@ local function detectSpiritBox(SB)
             end
         end
     end
+
+    if s then
+        addEvidenceToChecklist("Spirit Box")
+    end
+
     return s
 end
 
@@ -123,6 +132,11 @@ local function detectWriting(Book)
             end
         end
     end
+
+    if s then
+        addEvidenceToChecklist("Writing")
+    end
+
     return s
 end
 
@@ -147,6 +161,11 @@ local function detectFingerprints()
             end
         end
     end
+
+    if s then
+        addEvidenceToChecklist("Fingerprints")
+    end
+
     return s
 end
 
@@ -159,6 +178,11 @@ local function detectOrbs()
         end
         wait(.5)
     end
+
+    if s then
+        addEvidenceToChecklist("Orbs")
+    end
+
     return s
 end
 
@@ -174,6 +198,11 @@ local function detectFreezingTemps(TM)
     elseif not TM and s == false then
         -- Cold breath
     end
+
+    if s then
+        addEvidenceToChecklist("Freezing Temps")
+    end
+
     return s
 end
 
