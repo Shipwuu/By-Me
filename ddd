@@ -17,7 +17,7 @@ local toggleButton
 local function createTeleportFrame()
     teleportFrame = Instance.new("ScrollingFrame")
     teleportFrame.Size = UDim2.new(0, 150, 0, 180)  -- Adjusted size to fit search bar and buttons
-    teleportFrame.Position = UDim2.new(1, -160, 1, -180)  -- Initial hidden position
+    teleportFrame.Position = UDim2.new(1, -160, 1, 0)  -- Initial hidden position (below screen)
     teleportFrame.BackgroundTransparency = 0.5
     teleportFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
     teleportFrame.BorderSizePixel = 2
@@ -174,24 +174,31 @@ end
 -- Function to toggle the visibility of the teleport frame with animation
 local function toggleTeleportFrame()
     local isVisible = teleportFrame.Visible
-    local targetPosition = isVisible and UDim2.new(1, -160, 1, -180) or UDim2.new(1, -160, 1, -360)  -- Adjusted positions for slide-up and slide-down
 
-    local tweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-    local tween = TweenService:Create(teleportFrame, tweenInfo, {Position = targetPosition})
+    if isVisible then
+        local tweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+        local tween = TweenService:Create(teleportFrame, tweenInfo, {Position = UDim2.new(1, -160, 1, 0)})  -- Slide down (off screen)
+        
+        tween.Completed:Connect(function()
+            teleportFrame.Visible = false
+        end)
 
-    tween.Completed:Connect(function()
-        teleportFrame.Visible = not isVisible
-    end)
+        tween:Play()
+    else
+        teleportFrame.Visible = true
+        local tweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+        local tween = TweenService:Create(teleportFrame, tweenInfo, {Position = UDim2.new(1, -160, 1, -180)})  -- Slide up to position
 
-    tween:Play()
+        tween:Play()
+    end
 end
 
 -- Function to create the toggle button
 local function createToggleButton()
     toggleButton = Instance.new("TextButton")
     toggleButton.Size = UDim2.new(0, 50, 0, 30)  -- Size of the toggle button
-    toggleButton.Position = UDim2.new(1, -220, 1, -160)  -- Position to the left of the teleport frame
-    toggleButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)  -- Slightly lighter color
+    toggleButton.Position = UDim2.new(1, -220, 1, -220)  -- Position on the left side of the teleport frame
+    toggleButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)  -- Button color
     toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
     toggleButton.Text = "Toggle"
     toggleButton.Font = Enum.Font.SourceSans
@@ -213,5 +220,5 @@ createToggleButton()
 monitorGhostHunting()
 
 -- Ensure teleport frame starts hidden
-teleportFrame.Position = UDim2.new(1, -160, 1, -180)
+teleportFrame.Position = UDim2.new(1, -160, 1, 0)
 teleportFrame.Visible = false
