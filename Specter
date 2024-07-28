@@ -696,6 +696,8 @@ godButton.MouseButton1Click:Connect(function()
 
 end)
 
+-- @@@@@@@@@@@###############
+
 -- Services
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -828,11 +830,11 @@ end
 -- Function to create or update GUI for hunt display
 local function createHuntDisplay()
     huntFrame = Instance.new("Frame")
-    huntFrame.Size = UDim2.new(0, 150, 0, 30)  -- Smaller and slightly longer frame
-    huntFrame.Position = UDim2.new(0.5, 55, 0, 50)  -- Positioned to the right of the checklistFrame
+    huntFrame.Size = UDim2.new(1, 0, 0, 30)  -- Full width, same height
+    huntFrame.Position = UDim2.new(0, 0, 0, 0)  -- Positioned at the top of the screen
     huntFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
     huntFrame.BackgroundTransparency = 0.7  -- More transparency
-    huntFrame.BorderSizePixel = 2
+    huntFrame.BorderSizePixel = 0  -- Removed border
     huntFrame.Visible = false
     huntFrame.Parent = screenGui
 
@@ -921,7 +923,8 @@ monitorGhostHunting()
 teleportFrame.Position = UDim2.new(1, -160, 1, 0)
 teleportFrame.Visible = false
 
--- end of Ghost Room 
+
+-- end of Ghost Room ################
 
 -- @@@@@@@@@@@@@@@@
 
@@ -976,10 +979,10 @@ local function addEvidenceToChecklist(evidence)
         local label = Instance.new("TextLabel")
         label.Size = UDim2.new(1, 0, 0, 30)
         label.BackgroundTransparency = 1
-        label.Font = Enum.Font.SourceSans
+        label.Font = Enum.Font.SourceSansBold
         label.TextSize = 18
         label.TextColor3 = Color3.fromRGB(255, 255, 255)
-        label.Text = evidence .. " ✔"
+        label.Text = evidence .. "  ✓"
         label.TextStrokeTransparency = 0.5
         label.TextXAlignment = Enum.TextXAlignment.Center
         label.TextYAlignment = Enum.TextYAlignment.Center
@@ -1160,24 +1163,6 @@ local function detectEvidenceParts()
         end
     end
 end
-
--- Monitoring the appearance of evidence parts
-Workspace.ChildAdded:Connect(function(child)
-    local evidenceParts = {
-        ["emfpart5"] = detectEMF,
-        ["Book"] = detectWriting,
-        ["Spirit Box"] = detectSpiritBox,
-        ["Thermometer"] = detectFreezingTemps,
-        ["Orb"] = detectOrbs,
-        ["GhostRoom"] = detectFingerprints
-    }
-
-    if evidenceParts[child.Name] then
-        if evidenceParts[child.Name](child) then
-            addEvidenceToChecklist(child.Name)
-        end
-    end
-end)
 
 -- Detect initial evidence parts
 detectEvidenceParts()
