@@ -235,9 +235,7 @@ local function detectEvidenceParts()
     }
 
     for partName, detectFunc in pairs(evidenceParts) do
-        if detectFunc(Workspace:FindFirstChild(partName)) then
-            addEvidenceToChecklist(partName)
-        end
+        detectFunc(Workspace:FindFirstChild(partName))
     end
 end
 
@@ -253,9 +251,7 @@ Workspace.ChildAdded:Connect(function(child)
     }
 
     if evidenceParts[child.Name] then
-        if evidenceParts[child.Name](child) then
-            addEvidenceToChecklist(child.Name)
-        end
+        evidenceParts[child.Name](child)
     end
 end)
 
