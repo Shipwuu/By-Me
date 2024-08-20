@@ -24,7 +24,8 @@ sendWelcomeNotification(LocalPlayer)
 -- Game list
 local gamelist = {
     ["Specter"] = 5921569465,
-    ["Natural Disaster"] = 189707
+    ["Natural Disaster"] = 189707,
+    ["HOTEL 🛎️ Blair"] = 6348640020  -- Added game ID for HOTEL 🛎️ Blair
 }
 
 -- Function to send a notification
@@ -46,11 +47,13 @@ local function checkAndExecute()
             if gameName == "Specter" then
                 loadstring(game:HttpGet("https://raw.githubusercontent.com/Shipwuu/Specter/main/Final%20Gui"))()
 
-
             elseif gameName == "Natural Disaster" then
                 loadstring(game:HttpGet("https://raw.githubusercontent.com/hussain1323232234/My-Scripts/main/Natural%20Disaster"))()
                 loadstring(game:HttpGet("https://gist.githubusercontent.com/RedZenXYZ/3da6af1961efa275de6c3c2a6dbace03/raw/bb027f99cec0ea48ef9c5eabfb9116ddff20633d/FE%2520Emotes%2520Gui"))()
                 loadstring(game:HttpGet('https://pastefy.app/K3Ep6gX2/raw', true))()
+
+            elseif gameName == "HOTEL 🛎️ Blair" then
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/Shipwuu/Blair/main/Final%20Blair"))()
             end
             break -- Exit loop once the correct game is detected and executed
         end
@@ -59,4 +62,3 @@ end
 
 -- Run the check and execute function
 checkAndExecute()
-￼Enter
